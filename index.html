@@ -1,1 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>My Engineering Scope Pro</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body { margin: 0; background: #001100; color: #00ff00; font-family: monospace; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+        #header { padding: 10px; background: #002200; text-align: center; border-bottom: 2px solid #00ff00; font-size: 1.2em; font-weight: bold; }
+        canvas { flex-grow: 1; width: 100%; background: #000; display: block; }
+        #controls { padding: 15px; background: #002200; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 2px solid #00ff00; }
+        button { background: #00ff00; color: #000; border: none; padding: 15px; font-weight: bold; border-radius: 8px; font-size: 1em; cursor: pointer; }
+        button:hover { background: #00cc00; }
+        .info { font-size: 0.8em; text-align: center; grid-column: span 2; color: #008800; }
+    </style>
+</head>
+<body>
+    <div id="header">LAB SCOPE v1.0</div>
+    <canvas id="scopeCanvas"></canvas>
+    <div id="controls">
+        <button id="startBtn">START PROBE</button>
+        <button onclick="location.reload()">RESET</button>
+        <div class="info">Status: <span id="status">Waiting...</span></div>
+    </div>
 
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(reg => console.log('Service Worker registered'))
+                .catch(err => console.log('Service Worker registration failed'));
+        }
+
+        const canvas = document.getElementById('scopeCanvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        const statusDisp = document.getElementById('status');
+
+        let audioCtx, analyser, dataArray, source;
+
+        // Auto-resize canvas
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.onresize = resize;
+        resize();
+
+        async function initScope() {
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                source = audioCtx.createMediaStreamSource(stream);
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 2048;
+                
+                source.connect(analyser);
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+                
+                statusDisp.innerText = "LIVE (AUX/MIC)";
+                startBtn.style.display = "none";
+                draw();
+            } catch (err) {
+                statusDisp.innerText = "Error: Mic Blocked!";
+                console.error(err);
+            }
+        }
+
+        function draw() {
+            requestAnimationFrame(draw);
+            if (!analyser) return;
+            
+            analyser.getByteTimeDomainData(dataArray);
+
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Grid Lines (Engineering Style)
+            ctx.strokeStyle = '#003300';
+            ctx.lineWidth = 1;
+            for(let i=0; i<canvas.width; i+=canvas.width/10) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+            }
+            for(let i=0; i<canvas.height; i+=canvas.height/8) {
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+            }
+
+            // Draw Waveform
+            ctx.strokeStyle = '#00ff00';
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#00ff00';
+            ctx.beginPath();
+
+            let sliceWidth = canvas.width / dataArray.length;
+            let x = 0;
+
+            for (let i = 0; i < dataArray.length; i++) {
+                let v = dataArray[i] / 128.0;
+                let y = (1 - v) * canvas.height / 2;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+                x += sliceWidth;
+            }
+            ctx.stroke();
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (!audioCtx) initScope();
+            else if (audioCtx.state === 'suspended') audioCtx.resume();
+        });
+    </script>
+</body>
+                                    </html>
