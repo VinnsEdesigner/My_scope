@@ -4,7 +4,7 @@ An ultra-portable, web-based oscilloscope designed for electronics hobbyists and
 
 ## 🚀 Features
 * **Real-time Waveform:** High-fidelity visualization using the Web Audio API.
-* **PWA Enabled:** Works 100% offline via Service Workers (M-KOPA friendly! 📶).
+* **PWA Enabled:** Works 100% offline via Service Workers.
 * **Engineering Grid:** Calibrated background for signal estimation.
 * **Mobile-First UI:** Optimized for touch controls and full-screen use.
 
@@ -20,4 +20,4 @@ An ultra-portable, web-based oscilloscope designed for electronics hobbyists and
 4. (Optional) For hardware testing, connect a probe to your phone's AUX jack (be careful with voltage levels!).
 
 ---
-*Created by VinnsEdesigner — Aspiring Electronics Engineer* ⚡️
+*Created by VinnsEdesigner⚡️
