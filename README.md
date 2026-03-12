@@ -4,7 +4,7 @@ An ultra-portable, web-based oscilloscope designed for electronics desperate hob
 
 ## 🚀 Features
 * **Real-time Waveform:** High-fidelity visualization using the Web Audio API.
-* **PWA Enabled:** Works 100% offline via Service Workers.
+* **PWA Enabled:** Works 100% offline
 * **Engineering Grid:** Calibrated background for signal estimation.
 * **Mobile-First UI:** Optimized for touch controls and full-screen use.
 
