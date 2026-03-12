@@ -1,6 +1,6 @@
 # 🔬 Lab Scope v1.0 (Mobile Edition)
 
-An ultra-portable, web-based oscilloscope designed for electronics hobbyists and engineers. This tool turns your phone's microphone or AUX input into a real-time signal visualizer.
+An ultra-portable, web-based oscilloscope designed for electronics desperate hobbyists😅
 
 ## 🚀 Features
 * **Real-time Waveform:** High-fidelity visualization using the Web Audio API.
