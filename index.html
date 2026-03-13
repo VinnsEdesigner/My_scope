@@ -3,29 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Lab Scope v1.1</title>
+    <title>Lab Scope v1.2 Hybrid</title>
     <style>
         :root { --neon: #00ff00; --bg: #000; --grid: #002200; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: var(--neon); font-family: monospace; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        body { 
+            margin: 0; background: var(--bg); color: var(--neon); 
+            font-family: monospace; min-height: 100vh; /* GPT Fix 1 */
+            display: flex; flex-direction: column; 
+            overflow-y: auto; /* GPT Fix 2: Allows scrolling if hidden */
+        }
+
         #header { padding: 15px; background: #001100; text-align: center; border-bottom: 2px solid var(--neon); font-size: 1.2rem; font-weight: bold; }
-        #canvasContainer { flex: 1; position: relative; width: 100%; background: #000; }
-        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        #controls { padding: 20px; background: #001100; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border-top: 2px solid var(--neon); }
-        button { background: var(--neon); color: #000; border: none; padding: 15px; font-weight: bold; border-radius: 8px; font-size: 1rem; cursor: pointer; }
-        button:active { transform: scale(0.95); opacity: 0.8; }
+        
+        #canvasContainer { 
+            flex: 1; position: relative; width: 100%; min-height: 300px; background: #000; 
+        }
+
+        canvas { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            pointer-events: none; /* GPT Fix 3: Taps pass through to buttons! */
+        }
+
+        #controls { 
+            padding: 20px; background: #001100; 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; 
+            border-top: 2px solid var(--neon); 
+        }
+
+        button { 
+            background: var(--neon); color: #000; border: none; 
+            padding: 20px; font-weight: bold; border-radius: 8px; 
+            font-size: 1rem; cursor: pointer; z-index: 10; /* Ensure button is on top */
+        }
+
+        button:active { transform: scale(0.95); background: #00cc00; }
+
         .status { grid-column: span 2; text-align: center; font-size: 0.8rem; color: #008800; margin-top: 5px; }
     </style>
 </head>
 <body>
-    <div id="header">LAB SCOPE v1.1 🔋</div>
+    <div id="header">LAB SCOPE v1.2 🟢</div>
     <div id="canvasContainer">
         <canvas id="scopeCanvas"></canvas>
     </div>
     <div id="controls">
         <button id="startBtn">START PROBE</button>
         <button onclick="location.reload()">RESET</button>
-        <div class="status">System: <span id="statusTxt">OFFLINE</span></div>
+        <div class="status">System: <span id="statusTxt">READY</span></div>
     </div>
 
     <script>
@@ -38,7 +64,7 @@
         function resize() {
             canvas.width = canvas.parentElement.clientWidth;
             canvas.height = canvas.parentElement.clientHeight;
-            drawGrid(); // Show progress immediately!
+            drawGrid();
         }
 
         function drawGrid() {
@@ -46,16 +72,17 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = '#003300';
             ctx.lineWidth = 1;
+            // Draw Grid Lines
             for(let i=0; i<canvas.width; i+=canvas.width/10) {
                 ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
             }
             for(let i=0; i<canvas.height; i+=canvas.height/8) {
                 ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
             }
-            // Power Indicator
+            // System Indicator
             ctx.fillStyle = '#00ff00';
-            ctx.beginPath(); ctx.arc(20, 20, 4, 0, Math.PI*2); ctx.fill();
-            ctx.fillText("READY", 30, 24);
+            ctx.font = "12px monospace";
+            ctx.fillText("V1.2 HYBRID LIVE", 10, 20);
         }
 
         async function initScope() {
@@ -67,16 +94,18 @@
                 analyser.fftSize = 2048;
                 source.connect(analyser);
                 dataArray = new Uint8Array(analyser.frequencyBinCount);
-                statusTxt.innerText = "LIVE - SCANNING...";
+                statusTxt.innerText = "CAPTURING AUDIO...";
                 startBtn.style.visibility = "hidden";
                 animate();
             } catch (err) {
-                statusTxt.innerText = "ERROR: MIC DENIED";
+                statusTxt.innerText = "ERROR: MIC ACCESS DENIED";
+                alert("Please allow microphone access to see the waveform!");
             }
         }
 
         function animate() {
             requestAnimationFrame(animate);
+            if(!analyser) return;
             analyser.getByteTimeDomainData(dataArray);
             drawGrid();
             ctx.strokeStyle = '#00ff00';
@@ -94,8 +123,10 @@
             ctx.stroke();
         }
 
-        window.addEventListener('resize', resize);
-        setTimeout(resize, 100);
+        // GPT Fix 4: Listen for full page load before sizing
+        window.addEventListener("load", resize);
+        window.addEventListener("resize", resize);
+        
         startBtn.addEventListener('click', initScope);
     </script>
 </body>
