@@ -128,7 +128,7 @@ kk<!DOCTYPE html>
         window.addEventListener("resize", resize);
         
         startBtn.addEventListener('click', initScope);
-    </scriptif ('serviceWorker' in navigator) {
+    </script<if ('serviceWorker' in navigator) {
     // Adding ?v=1.3 forces the browser to check for a new file
     navigator.serviceWorker.register('service-worker.js?v=1.3')
     .then(reg => {
