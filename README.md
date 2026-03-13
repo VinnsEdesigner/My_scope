@@ -1,4 +1,4 @@
-# 🔬 Lab Scope v1.0 (Mobile Edition)
+# 🔬 Lab Scope v1.1 (Mobile Edition)
 
 An ultra-portable, web-based oscilloscope designed for electronics desperate hobbyists😅
 
