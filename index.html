@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Lab Scope version2 Hybrid</title>
+    <title>Lab Scope v1.3 Hybrid</title>
     <style>
         :root { --neon: #00ff00; --bg: #000; --grid: #002200; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -44,7 +44,7 @@
     </style>
 </head>
 <body>
-    <div id="header">LAB SCOPE v1.2 🟢</div>
+    <div id="header">LAB SCOPE v1.3 🟢</div>
     <div id="canvasContainer">
         <canvas id="scopeCanvas"></canvas>
     </div>
@@ -128,6 +128,22 @@
         window.addEventListener("resize", resize);
         
         startBtn.addEventListener('click', initScope);
-    </script>
+    </script>if ('serviceWorker' in navigator) {
+    // Adding ?v=1.3 forces the browser to check for a new file
+    navigator.serviceWorker.register('service-worker.js?v=1.3')
+    .then(reg => {
+        reg.onupdatefound = () => {
+            const installingWorker = reg.installing;
+            installingWorker.onstatechange = () => {
+                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // This alerts the user that a new version is ready
+                    if(confirm("New Version Detected! Reload now?")) {
+                        window.location.reload();
+                    }
+                }
+            };
+        };
+    });
+}
 </body>
 </html>
