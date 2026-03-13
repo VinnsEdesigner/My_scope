@@ -3,77 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Engineer Scope Pro</title>
-    <link rel="manifest" href="manifest.json">
+    <title>Lab Scope v1.1</title>
     <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; background: #000; color: #00ff00; font-family: monospace; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        #header { height: 50px; line-height: 50px; background: #002200; text-align: center; border-bottom: 2px solid #00ff00; font-weight: bold; }
-        #canvasContainer { flex: 1; position: relative; width: 100%; background: #000; overflow: hidden; }
+        :root { --neon: #00ff00; --bg: #000; --grid: #002200; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--bg); color: var(--neon); font-family: monospace; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+        #header { padding: 15px; background: #001100; text-align: center; border-bottom: 2px solid var(--neon); font-size: 1.2rem; font-weight: bold; }
+        #canvasContainer { flex: 1; position: relative; width: 100%; background: #000; }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        #controls { height: 180px; background: #001100; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; border-top: 2px solid #00ff00; }
-        button { background: #00ff00; color: #000; border: none; font-weight: bold; border-radius: 12px; font-size: 1.1em; active-opacity: 0.7; }
-        button:active { background: #00cc00; transform: scale(0.98); }
-        .info { grid-column: span 2; text-align: center; font-size: 0.9em; color: #008800; }
+        #controls { padding: 20px; background: #001100; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border-top: 2px solid var(--neon); }
+        button { background: var(--neon); color: #000; border: none; padding: 15px; font-weight: bold; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+        button:active { transform: scale(0.95); opacity: 0.8; }
+        .status { grid-column: span 2; text-align: center; font-size: 0.8rem; color: #008800; margin-top: 5px; }
     </style>
 </head>
 <body>
-    <div id="header">LAB SCOPE v1.1 ⚡️</div>
+    <div id="header">LAB SCOPE v1.1 🔋</div>
     <div id="canvasContainer">
         <canvas id="scopeCanvas"></canvas>
     </div>
     <div id="controls">
         <button id="startBtn">START PROBE</button>
         <button onclick="location.reload()">RESET</button>
-        <div class="info">Status: <span id="status">Ready</span></div>
+        <div class="status">System: <span id="statusTxt">OFFLINE</span></div>
     </div>
 
     <script>
-        // Register Service Worker for Offline Mode
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js').catch(() => {});
-        }
-
         const canvas = document.getElementById('scopeCanvas');
         const ctx = canvas.getContext('2d');
         const startBtn = document.getElementById('startBtn');
-        const statusDisp = document.getElementById('status');
-
-        let audioCtx, analyser, dataArray, source;
+        const statusTxt = document.getElementById('statusTxt');
+        let audioCtx, analyser, dataArray;
 
         function resize() {
             canvas.width = canvas.parentElement.clientWidth;
             canvas.height = canvas.parentElement.clientHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        async function initScope() {
-            try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                source = audioCtx.createMediaStreamSource(stream);
-                analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 2048;
-                source.connect(analyser);
-                dataArray = new Uint8Array(analyser.frequencyBinCount);
-                statusDisp.innerText = "LIVE (MIC/AUX)";
-                startBtn.style.display = "none";
-                draw();
-            } catch (err) {
-                statusDisp.innerText = "Error: Mic Denied!";
-            }
+            drawGrid(); // Show progress immediately!
         }
 
-        function draw() {
-            requestAnimationFrame(draw);
-            if (!analyser) return;
-            analyser.getByteTimeDomainData(dataArray);
-
+        function drawGrid() {
             ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Draw Grid
             ctx.strokeStyle = '#003300';
             ctx.lineWidth = 1;
             for(let i=0; i<canvas.width; i+=canvas.width/10) {
@@ -82,8 +52,33 @@
             for(let i=0; i<canvas.height; i+=canvas.height/8) {
                 ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
             }
+            // Power Indicator
+            ctx.fillStyle = '#00ff00';
+            ctx.beginPath(); ctx.arc(20, 20, 4, 0, Math.PI*2); ctx.fill();
+            ctx.fillText("READY", 30, 24);
+        }
 
-            // Draw Wave
+        async function initScope() {
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const source = audioCtx.createMediaStreamSource(stream);
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 2048;
+                source.connect(analyser);
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+                statusTxt.innerText = "LIVE - SCANNING...";
+                startBtn.style.visibility = "hidden";
+                animate();
+            } catch (err) {
+                statusTxt.innerText = "ERROR: MIC DENIED";
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            analyser.getByteTimeDomainData(dataArray);
+            drawGrid();
             ctx.strokeStyle = '#00ff00';
             ctx.lineWidth = 3;
             ctx.beginPath();
@@ -99,11 +94,9 @@
             ctx.stroke();
         }
 
-        // Touch-friendly listener
-        startBtn.addEventListener('click', () => {
-            if (!audioCtx) initScope();
-            else if (audioCtx.state === 'suspended') audioCtx.resume();
-        });
+        window.addEventListener('resize', resize);
+        setTimeout(resize, 100);
+        startBtn.addEventListener('click', initScope);
     </script>
 </body>
 </html>
