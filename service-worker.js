@@ -1,4 +1,4 @@
-const CACHE_NAME = "lab-scope-v1.2-pro"; // Incremented version
+const CACHE_NAME = "lab-scope-v1.3"; // Incremented version
 const urlsToCache = [
   "./",
   "./index.html",
