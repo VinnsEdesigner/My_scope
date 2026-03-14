@@ -1,4 +1,4 @@
-# 🔬 Lab Scope v2.0 (Mobile Edition)
+# 🔬 Lab Scope v2.1 (Mobile Edition)
 
 A web-based oscilloscope for electronics hobbyists with no PC — just your smartphone ⚡
 
