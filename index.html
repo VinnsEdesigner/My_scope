@@ -361,7 +361,7 @@ function drawGrid(c, w, h) {
     c.beginPath(); c.moveTo(w/2, 0); c.lineTo(w/2, h); c.stroke();
 
     // ── DIV LABELS ──
-    if (!audioCtx) return;
+    if (!audioCtx || !dataArray || canvas.width < 10) return;
     const samplesPerDiv = Math.floor(dataArray.length / zoom / COLS);
     const timePerDiv    = (samplesPerDiv / audioCtx.sampleRate * 1000); // ms
     const voltPerDiv    = (2.0 / gain / (ROWS/2)).toFixed(2); // normalized V
