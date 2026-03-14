@@ -10,8 +10,7 @@ A web-based oscilloscope for electronics hobbyists with no PC — just your smar
 - **Pause / Resume** — Freeze the waveform anytime
 - **Snapshot** — Save waveform as PNG image
 - **PWA Enabled** — Install on homescreen, works 100% offline
-- **Network-First Caching** — Always loads fresh code, no stale cache issues
-- **CRT Scanline Effect** — Because why not 😏
+- **CRT Scanline Effect** 
 
 ## 🛠️ Tech Stack
 - **Languages:** HTML5, CSS3, Vanilla JavaScript
@@ -46,4 +45,4 @@ My_scope/
 - [ ] Modular file architecture
 
 ---
-*Built by VinnsEdesigner ⚡ | Kenya 🇰🇪*
+*Built by VinnsEdesigner ⚡ | Nyeri,Kenya 🇰🇪*
