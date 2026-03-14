@@ -1,5 +1,5 @@
 // ── LAB SCOPE SERVICE WORKER v2.0 ──
-const CACHE_VERSION = "lab-scope-v2.0";
+const CACHE_VERSION = "lab-scope-v2.1";
 
 const ASSETS = [
   "./",
