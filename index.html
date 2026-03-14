@@ -1,1 +1,354 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lab Scope v3.0</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/tabs.css">
+    <link rel="stylesheet" href="css/measurements.css">
+    <link rel="stylesheet" href="css/canvas.css">
+    <link rel="stylesheet" href="css/controls.css">
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/splash.css">
+</head>
+<body>
+
+<div id="header">
+    <button id="hamburgerBtn" onclick="UI.toggleMenu()">☰</button>
+    <div class="logo">LAB<span class="logo-accent">SCOPE</span><span class="logo-ver">v3.0</span></div>
+    <div class="header-right">
+        <span id="sigTypeBadge" class="sig-badge">---</span>
+        <span id="statusTxt" class="status-label">STANDBY</span>
+        <div id="statusDot" class="status-dot"></div>
+    </div>
+</div>
+
+<div id="tabs">
+    <div class="tab active" data-tab="osc"  onclick="UI.switchTab('osc')">OSC</div>
+    <div class="tab"        data-tab="fft"  onclick="UI.switchTab('fft')">FFT</div>
+    <div class="tab"        data-tab="info" onclick="UI.switchTab('info')">INFO</div>
+</div>
+
+<div id="measurements">
+    <div class="meas"><span class="meas-label">FREQ</span><span class="meas-value" id="mFreq">---</span></div>
+    <div class="meas"><span class="meas-label">Vpp</span> <span class="meas-value" id="mVpp">---</span></div>
+    <div class="meas"><span class="meas-label">RMS</span> <span class="meas-value" id="mRms">---</span></div>
+    <div class="meas"><span class="meas-label">dBFS</span><span class="meas-value" id="mDb">---</span></div>
+</div>
+
+<div id="scopeArea">
+    <canvas id="scopeCanvas"></canvas>
+    <div class="scope-overlay"       id="overlayLeft">CH1 | AC</div>
+    <div class="scope-overlay-right" id="overlayRight">SR: 44.1kHz</div>
+    <div id="trigMarkerTop" class="trig-marker trig-top">▶ T+</div>
+    <div id="trigMarkerBot" class="trig-marker trig-bot">▶ T-</div>
+    <div id="splash">
+        <div class="splash-logo">LAB<br>SCOPE</div>
+        <div class="splash-sub">MOBILE OSCILLOSCOPE · v3.0</div>
+        <div class="splash-specs">
+            AUX / MIC INPUT · WEB AUDIO API<br>
+            FFT · SIGNAL DETECTION · TRIGGER<br>
+            OFFLINE CAPABLE · PWA READY
+        </div>
+        <button class="splash-btn" onclick="Audio.init()">▶ START PROBE</button>
+    </div>
+</div>
+
+<div id="controls">
+    <div class="btn-row">
+        <button class="btn-primary"   id="pauseBtn"   onclick="UI.togglePause()"  disabled>⏸ PAUSE</button>
+        <button class="btn-secondary" id="triggerBtn" onclick="Trigger.toggle()">⚡ TRIG</button>
+        <button class="btn-secondary" onclick="UI.switchTab('fft')">FFT</button>
+    </div>
+    <div class="btn-row-2">
+        <button class="btn-amber"  onclick="UI.captureSnapshot()">📸 SNAP</button>
+        <button class="btn-danger" onclick="Audio.reset()">↺ RESET</button>
+    </div>
+</div>
+
+<div id="menuOverlay" onclick="UI.toggleMenu()"></div>
+<div id="sideMenu">
+    <div class="menu-header">
+        <span class="menu-title">⚙ SETTINGS</span>
+        <button class="menu-close" onclick="UI.toggleMenu()">✕</button>
+    </div>
+
+    <div id="menuTabs">
+        <div class="mtab active" data-mtab="controls" onclick="UI.switchMenuTab('controls')">CONTROLS</div>
+        <div class="mtab" data-mtab="trigger"  onclick="UI.switchMenuTab('trigger')">TRIGGER</div>
+        <div class="mtab" data-mtab="calib"    onclick="UI.switchMenuTab('calib')">CALIBRATE</div>
+        <div class="mtab" data-mtab="manual"   onclick="UI.switchMenuTab('manual')">MANUAL</div>
+        <div class="mtab" data-mtab="build"    onclick="UI.switchMenuTab('build')">BUILD</div>
+    </div>
+
+    <div class="mpanel active" id="mpanel-controls">
+        <div class="mgroup">
+            <div class="mgroup-title">TIMEBASE</div>
+            <div class="mrow">
+                <span class="mlabel">TIME/DIV</span>
+                <div class="mrow-right">
+                    <button class="mbtn" onclick="UI.adjustTimeDiv(-1)">◀</button>
+                    <span class="mval" id="timeDivVal">AUTO</span>
+                    <button class="mbtn" onclick="UI.adjustTimeDiv(1)">▶</button>
+                </div>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">ZOOM</span>
+                <input type="range" id="zoomSlider" min="1" max="8" step="0.5" value="1" oninput="UI.updateZoom(this.value)">
+                <span class="mval" id="zoomVal">1.0x</span>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">AMPLITUDE</div>
+            <div class="mrow">
+                <span class="mlabel">VOLT/DIV</span>
+                <div class="mrow-right">
+                    <button class="mbtn" onclick="UI.adjustVoltDiv(-1)">◀</button>
+                    <span class="mval" id="voltDivVal">AUTO</span>
+                    <button class="mbtn" onclick="UI.adjustVoltDiv(1)">▶</button>
+                </div>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">GAIN</span>
+                <input type="range" id="gainSlider" min="1" max="10" step="0.5" value="3" oninput="UI.updateGain(this.value)">
+                <span class="mval" id="gainVal">3.0x</span>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">DISPLAY</div>
+            <div class="mrow">
+                <span class="mlabel">SMOOTH</span>
+                <input type="range" id="smoothSlider" min="0" max="0.95" step="0.05" value="0.6" oninput="UI.updateSmoothing(this.value)">
+                <span class="mval" id="smoothVal">0.60</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">FFT SIZE</span>
+                <div class="mrow-right">
+                    <button class="mbtn" onclick="UI.adjustFFTSize(-1)">◀</button>
+                    <span class="mval" id="fftSizeVal">4096</span>
+                    <button class="mbtn" onclick="UI.adjustFFTSize(1)">▶</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mpanel" id="mpanel-trigger">
+        <div class="mgroup">
+            <div class="mgroup-title">TRIGGER MODE</div>
+            <div class="mrow">
+                <span class="mlabel">MODE</span>
+                <div class="mrow-right">
+                    <button class="mbtn-sel active" id="tmode-auto"   onclick="Trigger.setMode('auto')">AUTO</button>
+                    <button class="mbtn-sel"        id="tmode-normal" onclick="Trigger.setMode('normal')">NORM</button>
+                    <button class="mbtn-sel"        id="tmode-single" onclick="Trigger.setMode('single')">SINGLE</button>
+                </div>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">EDGE</span>
+                <div class="mrow-right">
+                    <button class="mbtn-sel active" id="tedge-rising"  onclick="Trigger.setEdge('rising')">RISE ↑</button>
+                    <button class="mbtn-sel"        id="tedge-falling" onclick="Trigger.setEdge('falling')">FALL ↓</button>
+                    <button class="mbtn-sel"        id="tedge-both"    onclick="Trigger.setEdge('both')">BOTH</button>
+                </div>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">TRIGGER LEVEL</div>
+            <div class="mrow">
+                <span class="mlabel">UPPER</span>
+                <input type="range" id="trigUpperSlider" min="-100" max="100" step="1" value="30" oninput="Trigger.updateUpper(this.value)">
+                <span class="mval" id="trigUpperVal">+0.30V</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">LOWER</span>
+                <input type="range" id="trigLowerSlider" min="-100" max="100" step="1" value="-30" oninput="Trigger.updateLower(this.value)">
+                <span class="mval" id="trigLowerVal">-0.30V</span>
+            </div>
+            <div class="mrow"><span class="mlabel">MANUAL INPUT</span></div>
+            <div class="mrow">
+                <input type="number" id="trigManualInput" class="minput" placeholder="e.g. 0.25" step="0.01" min="-1" max="1">
+                <button class="mbtn-full" onclick="Trigger.setManual()">SET</button>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">TRIGGER STATUS</div>
+            <div class="mrow">
+                <span class="mlabel">STATE</span>
+                <span class="mval" id="trigStatusVal" style="color:var(--amber)">ARMED</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">LAST FIRE</span>
+                <span class="mval" id="trigLastFire">---</span>
+            </div>
+            <div class="mrow-btn">
+                <button class="mbtn-full" onclick="Trigger.forceArm()">↺ RE-ARM</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mpanel" id="mpanel-calib">
+        <div class="mgroup">
+            <div class="mgroup-title">FREQUENCY CALIBRATION</div>
+            <div class="mcalib-info">Connect a known reference signal to AUX, enter its exact frequency, then tap CALIBRATE.</div>
+            <div class="mrow"><span class="mlabel">REF FREQ (Hz)</span></div>
+            <div class="mrow">
+                <input type="number" id="calibFreqInput" class="minput" placeholder="e.g. 1000" value="1000">
+                <button class="mbtn-full" onclick="Calibration.runFreq()">CALIBRATE</button>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">CORRECTION</span>
+                <span class="mval" id="calibFreqResult">1.000x</span>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">AMPLITUDE CALIBRATION</div>
+            <div class="mcalib-info">Connect a known Vpp signal, enter the exact value, then tap CALIBRATE.</div>
+            <div class="mrow"><span class="mlabel">REF Vpp</span></div>
+            <div class="mrow">
+                <input type="number" id="calibVppInput" class="minput" placeholder="e.g. 1.00" step="0.01" value="1.00">
+                <button class="mbtn-full" onclick="Calibration.runVpp()">CALIBRATE</button>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">CORRECTION</span>
+                <span class="mval" id="calibVppResult">1.000x</span>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">RESET CALIBRATION</div>
+            <div class="mrow-btn">
+                <button class="mbtn-full btn-danger-full" onclick="Calibration.reset()">RESET TO DEFAULT</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mpanel" id="mpanel-manual">
+        <div class="manual-scroll">
+            <div class="mgroup">
+                <div class="mgroup-title">GETTING STARTED</div>
+                <div class="manual-text">
+                    1. Tap <b>▶ START PROBE</b> on splash screen<br>
+                    2. Grant microphone permission<br>
+                    3. Scope begins capturing audio input<br>
+                    4. For hardware signals connect probe to AUX jack
+                </div>
+            </div>
+            <div class="mgroup">
+                <div class="mgroup-title">OSCILLOSCOPE TAB</div>
+                <div class="manual-text">
+                    Time-domain waveform. X = time, Y = amplitude.<br><br>
+                    <b>ZOOM</b> — zooms time axis<br>
+                    <b>GAIN</b> — amplifies signal vertically<br>
+                    <b>TIME/DIV</b> — manual timebase override<br>
+                    <b>VOLT/DIV</b> — manual voltage scale override
+                </div>
+            </div>
+            <div class="mgroup">
+                <div class="mgroup-title">FFT SPECTRUM TAB</div>
+                <div class="manual-text">
+                    Frequency content. X = frequency, Y = amplitude.<br><br>
+                    Green = low energy · Yellow = medium · Red = high<br>
+                    Dominant peak = reported FREQ measurement
+                </div>
+            </div>
+            <div class="mgroup">
+                <div class="mgroup-title">TRIGGER SYSTEM</div>
+                <div class="manual-text">
+                    <b>AUTO</b> — always displays, even without trigger<br>
+                    <b>NORMAL</b> — only updates on trigger event<br>
+                    <b>SINGLE</b> — captures once then pauses<br><br>
+                    <b>RISE ↑</b> — triggers on rising edge crossing upper threshold<br>
+                    <b>FALL ↓</b> — triggers on falling edge crossing lower threshold<br>
+                    <b>BOTH</b> — triggers on either edge
+                </div>
+            </div>
+            <div class="mgroup">
+                <div class="mgroup-title">SIGNAL DETECTION</div>
+                <div class="manual-text">
+                    Classifies using 3 algorithms:<br><br>
+                    <b>Crest Factor</b> (peak÷RMS): Sine≈1.41, Triangle≈1.73, Square≈1.0<br>
+                    <b>Clip Ratio</b>: % of samples at min/max — high = Square<br>
+                    <b>Slope Asymmetry</b>: Sawtooth has unequal rise/fall
+                </div>
+            </div>
+            <div class="mgroup">
+                <div class="mgroup-title">AUX JACK SAFETY</div>
+                <div class="manual-text">
+                    ⚠️ NEVER connect mains voltage to AUX jack<br>
+                    ⚠️ Max safe input: &lt;1Vpp audio-level signals<br>
+                    ✅ Use resistor divider to scale down signals<br>
+                    ✅ Recommended: 100kΩ/10kΩ for up to 10V signals
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mpanel" id="mpanel-build">
+        <div class="mgroup">
+            <div class="mgroup-title">APPLICATION</div>
+            <div class="build-row"><span>NAME</span><span>Lab Scope</span></div>
+            <div class="build-row"><span>VERSION</span><span>v3.0</span></div>
+            <div class="build-row"><span>BUILD DATE</span><span>2026-03-14</span></div>
+            <div class="build-row"><span>AUTHOR</span><span>VinnsEdesigner</span></div>
+            <div class="build-row"><span>LOCATION</span><span>Nyeri, Kenya 🇰🇪</span></div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">TECH STACK</div>
+            <div class="build-row"><span>LANGUAGES</span><span>HTML5 CSS3 JS</span></div>
+            <div class="build-row"><span>API</span><span>Web Audio API</span></div>
+            <div class="build-row"><span>FONTS</span><span>Orbitron + Share Tech Mono</span></div>
+            <div class="build-row"><span>ARCH</span><span>PWA + Service Worker</span></div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">RUNTIME INFO</div>
+            <div class="build-row"><span>SAMPLE RATE</span><span id="bSampleRate">---</span></div>
+            <div class="build-row"><span>FFT SIZE</span><span id="bFftSize">---</span></div>
+            <div class="build-row"><span>FREQ RES</span><span id="bFreqRes">---</span></div>
+            <div class="build-row"><span>BROWSER</span><span id="bBrowser">---</span></div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">ROADMAP</div>
+            <div class="build-row-full">☐ XY mode (Lissajous)</div>
+            <div class="build-row-full">☐ Signal generator (tone output)</div>
+            <div class="build-row-full">☐ Waveform history buffer</div>
+            <div class="build-row-full">☐ CSV data export</div>
+            <div class="build-row-full">✅ Modular architecture</div>
+        </div>
+    </div>
+
+</div>
+
+<script src="js/state.js"></script>
+<script src="js/grid.js"></script>
+<script src="js/signal-detect.js"></script>
+<script src="js/measurements.js"></script>
+<script src="js/trigger.js"></script>
+<script src="js/oscilloscope.js"></script>
+<script src="js/fft.js"></script>
+<script src="js/calibration.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js?v=3.0')
+    .then(reg => {
+        reg.onupdatefound = () => {
+            const w = reg.installing;
+            w.onstatechange = () => {
+                if (w.state === 'installed' && navigator.serviceWorker.controller) {
+                    if (confirm("New version available! Reload?")) window.location.reload();
+                }
+            };
+        };
+    });
+}
+</script>
+
+</body>
+</html>
