@@ -1,0 +1,34 @@
+/* ── MEASUREMENTS.CSS ── */
+#measurements {
+    display:               grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:                   1px;
+    background:            var(--border);
+    flex-shrink:           0;
+}
+
+.meas {
+    background:  var(--panel);
+    padding:     5px 4px;
+    text-align:  center;
+}
+
+.meas-label {
+    font-size:      0.48rem;
+    color:          var(--text-dim);
+    letter-spacing: 1px;
+    display:        block;
+    text-transform: uppercase;
+}
+
+.meas-value {
+    font-family:  var(--font-head);
+    font-size:    0.72rem;
+    font-weight:  700;
+    color:        var(--cyan);
+    text-shadow:  0 0 6px rgba(0,229,255,0.5);
+    display:      block;
+    margin-top:   1px;
+}
+.meas-value.warn  { color: var(--amber); text-shadow: 0 0 6px rgba(255,179,0,0.5); }
+.meas-value.alert { color: var(--red);   text-shadow: 0 0 6px rgba(255,23,68,0.5); }

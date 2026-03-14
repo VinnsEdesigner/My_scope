@@ -1,0 +1,91 @@
+/* ── HEADER.CSS ── */
+#header {
+    display:         flex;
+    align-items:     center;
+    justify-content: space-between;
+    padding:         7px 12px;
+    background:      var(--panel);
+    border-bottom:   1px solid var(--border);
+    flex-shrink:     0;
+    gap:             8px;
+}
+
+#hamburgerBtn {
+    background:  transparent;
+    border:      1px solid var(--border);
+    color:       var(--neon);
+    font-size:   1.1rem;
+    padding:     4px 9px;
+    border-radius: 4px;
+    cursor:      pointer;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    transition:  all 0.2s;
+}
+#hamburgerBtn:active { background: var(--neon-glow); }
+
+.logo {
+    font-family:  var(--font-head);
+    font-weight:  900;
+    font-size:    1rem;
+    letter-spacing: 3px;
+    text-shadow:  0 0 10px var(--neon-glow), 0 0 20px var(--neon-glow);
+    flex:         1;
+    text-align:   center;
+}
+.logo-accent { color: var(--amber); }
+.logo-ver    { color: var(--neon); font-size: 0.6rem; margin-left: 4px; }
+
+.header-right {
+    display:     flex;
+    align-items: center;
+    gap:         8px;
+    flex-shrink: 0;
+}
+
+/* signal type badge */
+.sig-badge {
+    font-family:    var(--font-head);
+    font-size:      0.55rem;
+    font-weight:    700;
+    letter-spacing: 1.5px;
+    padding:        3px 7px;
+    border-radius:  3px;
+    border:         1px solid var(--neon);
+    color:          #000;
+    background:     var(--neon);
+    transition:     all 0.3s;
+    min-width:      60px;
+    text-align:     center;
+}
+.sig-badge.sine     { background: var(--cyan);   border-color: var(--cyan);   color: #000; }
+.sig-badge.square   { background: var(--amber);  border-color: var(--amber);  color: #000; }
+.sig-badge.triangle { background: var(--purple); border-color: var(--purple); color: #000; }
+.sig-badge.sawtooth { background: var(--orange); border-color: var(--orange); color: #000; }
+.sig-badge.noise    { background: var(--red);    border-color: var(--red);    color: #fff; }
+.sig-badge.dc       { background: var(--neon);   border-color: var(--neon);   color: #000; }
+
+.status-label {
+    font-size:      0.6rem;
+    color:          var(--text-dim);
+    letter-spacing: 1px;
+}
+
+.status-dot {
+    width:        8px;
+    height:       8px;
+    border-radius: 50%;
+    background:   var(--red);
+    box-shadow:   0 0 6px var(--red);
+    transition:   all 0.3s;
+    flex-shrink:  0;
+}
+.status-dot.active {
+    background:  var(--neon);
+    box-shadow:  0 0 8px var(--neon-glow), 0 0 16px var(--neon-glow);
+    animation:   dot-pulse 1.2s infinite;
+}
+@keyframes dot-pulse {
+    0%,100% { opacity: 1; }
+    50%     { opacity: 0.3; }
+}
