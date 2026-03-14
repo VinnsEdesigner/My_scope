@@ -1,6 +1,4 @@
 /* ── BASE.CSS v1.0.0 ── */
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Bebas+Neue&display=swap');
-
 /* ── DARK THEME (default) ── */
 :root, [data-theme="dark"] {
     --neon:          #00ff41;
