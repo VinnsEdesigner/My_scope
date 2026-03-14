@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lab Scope v2.0</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon: #00ff41;
+            --neon-dim: #00aa2a;
+            --neon-glow: rgba(0,255,65,0.4);
+            --amber: #ffb300;
+            --cyan: #00e5ff;
+            --red: #ff1744;
+            --bg: #020c02;
+            --panel: #030f03;
+            --border: #00ff4133;
+            --grid: #001a00;
+            --text-dim: #006600;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--neon);
+            font-family: 'Share Tech Mono', monospace;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 14px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            font-size: 1rem;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px var(--neon-glow), 0 0 20px var(--neon-glow);
+        }
+        .logo span { color: var(--amber); }
+        .header-right { display: flex; align-items: center; gap: 10px; }
+        .status-dot {
+            width: 9px; height: 9px;
+            border-radius: 50%;
+            background: var(--red);
+            box-shadow: 0 0 6px var(--red);
+            transition: all 0.3s;
+        }
+        .status-dot.active {
+            background: var(--neon);
+            box-shadow: 0 0 8px var(--neon-glow), 0 0 16px var(--neon-glow);
+            animation: pulse 1.2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .status-label { font-size: 0.65rem; color: var(--text-dim); letter-spacing: 1px; }
+        #tabs {
+            display: flex;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .tab {
+            flex: 1; padding: 8px 4px; text-align: center;
+            font-size: 0.65rem; letter-spacing: 1.5px;
+            color: var(--text-dim); cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s; user-select: none;
+        }
+        .tab.active {
+            color: var(--neon);
+            border-bottom-color: var(--neon);
+            text-shadow: 0 0 8px var(--neon-glow);
+        }
+        #measurements {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--border);
+            flex-shrink: 0;
+        }
+        .meas { background: var(--panel); padding: 6px 4px; text-align: center; }
+        .meas-label { font-size: 0.5rem; color: var(--text-dim); letter-spacing: 1px; display: block; }
+        .meas-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75rem; font-weight: 700;
+            color: var(--cyan);
+            text-shadow: 0 0 6px rgba(0,229,255,0.5);
+            display: block; margin-top: 1px;
+        }
+        .meas-value.warn { color: var(--amber); text-shadow: 0 0 6px rgba(255,179,0,0.5); }
+        .meas-value.alert { color: var(--red); text-shadow: 0 0 6px rgba(255,23,68,0.5); }
+        #scopeArea { flex: 1; position: relative; overflow: hidden; min-height: 0; }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .scope-overlay {
+            position: absolute; top: 6px; left: 8px;
+            font-size: 0.55rem; color: var(--neon-dim);
+            letter-spacing: 1px; pointer-events: none;
+        }
+        .scope-overlay-right {
+            position: absolute; top: 6px; right: 8px;
+            font-size: 0.55rem; color: var(--neon-dim);
+            letter-spacing: 1px; pointer-events: none; text-align: right;
+        }
+        #controls {
+            padding: 10px 12px;
+            background: var(--panel);
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .btn-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .btn-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        button {
+            font-family: 'Share Tech Mono', monospace;
+            border: 1px solid var(--neon);
+            border-radius: 4px; padding: 10px 4px;
+            font-size: 0.6rem; letter-spacing: 1.5px;
+            cursor: pointer; transition: all 0.15s; user-select: none;
+        }
+        button:active { transform: scale(0.96); }
+        .btn-primary { background: var(--neon); color: #000; font-weight: bold; box-shadow: 0 0 10px var(--neon-glow); }
+        .btn-primary:active { background: var(--neon-dim); }
+        .btn-secondary { background: transparent; color: var(--neon); }
+        .btn-secondary:active { background: var(--neon-glow); }
+        .btn-danger { background: transparent; color: var(--red); border-color: var(--red); }
+        .btn-amber { background: transparent; color: var(--amber); border-color: var(--amber); }
+        .slider-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+        .slider-label { font-size: 0.55rem; color: var(--text-dim); letter-spacing: 1px; white-space: nowrap; }
+        input[type=range] {
+            flex: 1; -webkit-appearance: none;
+            height: 3px; background: var(--grid);
+            border-radius: 2px; outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: var(--neon); box-shadow: 0 0 6px var(--neon-glow); cursor: pointer;
+        }
+        .slider-val { font-size: 0.6rem; color: var(--neon); min-width: 36px; text-align: right; }
+        #splash {
+            position: absolute; inset: 0;
+            background: rgba(2,12,2,0.92);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 16px; z-index: 100; backdrop-filter: blur(2px);
+        }
+        #splash .big-logo {
+            font-family: 'Orbitron', monospace;
+            font-weight: 900; font-size: 1.8rem;
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px var(--neon-glow), 0 0 40px var(--neon-glow);
+            text-align: center;
+        }
+        #splash .sub { font-size: 0.65rem; color: var(--text-dim); letter-spacing: 3px; text-align: center; }
+        #splash .start-btn {
+            margin-top: 10px; padding: 16px 40px;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.85rem; letter-spacing: 3px;
+            background: var(--neon); color: #000;
+            border: none; border-radius: 4px; font-weight: 700;
+            box-shadow: 0 0 20px var(--neon-glow), 0 0 40px var(--neon-glow);
+            animation: glow-pulse 2s infinite;
+        }
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 20px var(--neon-glow), 0 0 40px var(--neon-glow); }
+            50% { box-shadow: 0 0 30px var(--neon-glow), 0 0 60px var(--neon-glow), 0 0 80px var(--neon-glow); }
+        }
+        #splash .specs { font-size: 0.55rem; color: var(--text-dim); text-align: center; line-height: 1.8; letter-spacing: 1px; }
+        #scopeArea::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: repeating-linear-gradient(
+                0deg, transparent, transparent 2px,
+                rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+            );
+            pointer-events: none; z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+<div id="header">
+    <div class="logo">LAB<span>SCOPE</span> <span style="color:var(--neon);font-size:0.7rem">v2.0</span></div>
+    <div class="header-right">
+        <span class="status-label" id="statusTxt">STANDBY</span>
+        <div class="status-dot" id="statusDot"></div>
+    </div>
+</div>
+
+<div id="tabs">
+    <div class="tab active" data-tab="osc" onclick="switchTab('osc')">OSCILLOSCOPE</div>
+    <div class="tab" data-tab="fft" onclick="switchTab('fft')">FFT SPECTRUM</div>
+    <div class="tab" data-tab="info" onclick="switchTab('info')">SIGNAL INFO</div>
+</div>
+
+<div id="measurements">
+    <div class="meas">
+        <span class="meas-label">FREQ</span>
+        <span class="meas-value" id="mFreq">---</span>
+    </div>
+    <div class="meas">
+        <span class="meas-label">Vpp</span>
+        <span class="meas-value" id="mVpp">---</span>
+    </div>
+    <div class="meas">
+        <span class="meas-label">RMS</span>
+        <span class="meas-value" id="mRms">---</span>
+    </div>
+    <div class="meas">
+        <span class="meas-label">dBFS</span>
+        <span class="meas-value" id="mDb">---</span>
+    </div>
+</div>
+
+<div id="scopeArea">
+    <canvas id="scopeCanvas"></canvas>
+    <div class="scope-overlay" id="overlayLeft">CH1 | AC</div>
+    <div class="scope-overlay-right" id="overlayRight">SAMPLE: 44.1kHz</div>
+    <div id="splash">
+        <div class="big-logo">LAB<br>SCOPE</div>
+        <div class="sub">MOBILE OSCILLOSCOPE · v2.0</div>
+        <div class="specs">
+            AUX / MIC INPUT · WEB AUDIO API<br>
+            FFT SPECTRUM · REAL-TIME MEASUREMENTS<br>
+            OFFLINE CAPABLE · PWA READY
+        </div>
+        <button class="start-btn" onclick="initScope()">▶ START PROBE</button>
+    </div>
+</div>
+
+<div id="controls">
+    <div class="btn-row">
+        <button class="btn-primary" id="pauseBtn" onclick="togglePause()" disabled>⏸ PAUSE</button>
+        <button class="btn-secondary" onclick="switchTab('osc')">OSC</button>
+        <button class="btn-secondary" onclick="switchTab('fft')">FFT</button>
+    </div>
+    <div class="btn-row-2">
+        <button class="btn-amber" onclick="captureSnapshot()">📸 SNAPSHOT</button>
+        <button class="btn-danger" onclick="resetScope()">↺ RESET</button>
+    </div>
+    <div class="slider-row">
+        <span class="slider-label">ZOOM</span>
+        <input type="range" id="zoomSlider" min="1" max="8" step="0.5" value="1" oninput="updateZoom(this.value)">
+        <span class="slider-val" id="zoomVal">1.0x</span>
+    </div>
+    <div class="slider-row">
+        <span class="slider-label">GAIN</span>
+        <input type="range" id="gainSlider" min="1" max="10" step="0.5" value="3" oninput="updateGain(this.value)">
+        <span class="slider-val" id="gainVal">3.0x</span>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('scopeCanvas');
+    const ctx = canvas.getContext('2d');
+    const statusTxt = document.getElementById('statusTxt');
+    const statusDot = document.getElementById('statusDot');
+    const pauseBtn = document.getElementById('pauseBtn');
+
+    let audioCtx, analyser, dataArray, freqArray;
+    let animId = null;
+    let paused = false;
+    let currentTab = 'osc';
+    let zoom = 1;
+    let gain = 3;
+    let isRunning = false;
+
+    function resize() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+        if (!isRunning) drawIdle();
+    }
+
+    function drawGrid(c, w, h) {
+        c.fillStyle = '#000';
+        c.fillRect(0, 0, w, h);
+        c.strokeStyle = '#001800';
+        c.lineWidth = 1;
+        const cols = 10, rows = 8;
+        for (let i = 1; i < cols; i++) {
+            c.beginPath(); c.moveTo(i * w / cols, 0); c.lineTo(i * w / cols, h); c.stroke();
+        }
+        for (let i = 1; i < rows; i++) {
+            c.beginPath(); c.moveTo(0, i * h / rows); c.lineTo(w, i * h / rows); c.stroke();
+        }
+        c.strokeStyle = '#003300';
+        c.beginPath(); c.moveTo(0, h/2); c.lineTo(w, h/2); c.stroke();
+        c.beginPath(); c.moveTo(w/2, 0); c.lineTo(w/2, h); c.stroke();
+    }
+
+    function drawIdle() {
+        const w = canvas.width, h = canvas.height;
+        drawGrid(ctx, w, h);
+        ctx.fillStyle = '#002200';
+        ctx.font = "12px 'Share Tech Mono'";
+        ctx.fillText("AWAITING SIGNAL...", 10, 20);
+    }
+
+    async function initScope() {
+        try {
+            document.getElementById('splash').style.display = 'none';
+            statusTxt.innerText = 'CONNECTING...';
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+            });
+            const source = audioCtx.createMediaStreamSource(stream);
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 4096;
+            analyser.smoothingTimeConstant = 0.6;
+            source.connect(analyser);
+            dataArray = new Uint8Array(analyser.fftSize);
+            freqArray = new Uint8Array(analyser.frequencyBinCount);
+            isRunning = true;
+            statusTxt.innerText = 'LIVE';
+            statusDot.classList.add('active');
+            pauseBtn.disabled = false;
+            document.getElementById('overlayRight').innerText = `SR: ${audioCtx.sampleRate/1000}kHz`;
+            animate();
+        } catch (err) {
+            document.getElementById('splash').style.display = 'flex';
+            statusTxt.innerText = 'MIC DENIED';
+            alert("Microphone access required. Please allow and retry.");
+        }
+    }
+
+    function animate() {
+        animId = requestAnimationFrame(animate);
+        if (paused || !analyser) return;
+        const w = canvas.width, h = canvas.height;
+        analyser.getByteTimeDomainData(dataArray);
+        analyser.getByteFrequencyData(freqArray);
+        updateMeasurements();
+        if (currentTab === 'osc') drawOscilloscope(w, h);
+        else if (currentTab === 'fft') drawFFT(w, h);
+        else drawSignalInfo(w, h);
+    }
+
+    function drawOscilloscope(w, h) {
+        drawGrid(ctx, w, h);
+        const visibleSamples = Math.floor(dataArray.length / zoom);
+        const startSample = Math.floor((dataArray.length - visibleSamples) / 2);
+        ctx.strokeStyle = '#00ff41';
+        ctx.lineWidth = 2;
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = '#00ff41';
+        ctx.beginPath();
+        const sliceWidth = w / visibleSamples;
+        let x = 0;
+        for (let i = 0; i < visibleSamples; i++) {
+            const raw = dataArray[startSample + i];
+            const v = ((raw / 128.0) - 1.0) * gain;
+            const y = h / 2 - (v * h / 4);
+            if (i === 0) ctx.moveTo(x, Math.max(0, Math.min(h, y)));
+            else ctx.lineTo(x, Math.max(0, Math.min(h, y)));
+            x += sliceWidth;
+        }
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#004400';
+        ctx.font = "10px 'Share Tech Mono'";
+        ctx.fillText("CH1 TIME DOMAIN", 8, 16);
+    }
+
+    function drawFFT(w, h) {
+        drawGrid(ctx, w, h);
+        const barCount = 128;
+        const step = Math.floor(freqArray.length / barCount);
+        const barW = w / barCount;
+        for (let i = 0; i < barCount; i++) {
+            let sum = 0;
+            for (let j = 0; j < step; j++) sum += freqArray[i * step + j];
+            const avg = sum / step;
+            const barH = (avg / 255) * h;
+            const hue = 120 - (avg / 255) * 100;
+            ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = `hsl(${hue}, 100%, 60%)`;
+            ctx.fillRect(i * barW, h - barH, barW - 1, barH);
+        }
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#004400';
+        ctx.font = "9px 'Share Tech Mono'";
+        const nyquist = audioCtx ? audioCtx.sampleRate / 2 : 22050;
+        for (let k = 0; k <= 4; k++) {
+            const freq = (nyquist / 4) * k;
+            const x = (freq / nyquist) * w;
+            ctx.fillText(freq >= 1000 ? (freq/1000).toFixed(1)+'k' : freq+'Hz', x + 2, h - 4);
+        }
+        ctx.fillText("FFT SPECTRUM", 8, 16);
+    }
+
+    function drawSignalInfo(w, h) {
+        drawGrid(ctx, w, h);
+        const freq = parseFloat(document.getElementById('mFreq').innerText) || 0;
+        const vpp = document.getElementById('mVpp').innerText;
+        const rms = document.getElementById('mRms').innerText;
+        const db = document.getElementById('mDb').innerText;
+        ctx.font = "bold 13px 'Share Tech Mono'";
+        const lines = [
+            `> FREQUENCY  : ${freq ? freq + ' Hz' : '--- Hz'}`,
+            `> Vpp        : ${vpp}`,
+            `> RMS        : ${rms}`,
+            `> dBFS       : ${db}`,
+            `> ZOOM       : ${zoom.toFixed(1)}x`,
+            `> GAIN       : ${gain.toFixed(1)}x`,
+            `> FFT SIZE   : ${analyser ? analyser.fftSize : '---'}`,
+            `> SAMPLE RATE: ${audioCtx ? audioCtx.sampleRate/1000 + 'kHz' : '---'}`,
+            `> STATUS     : ${isRunning ? (paused ? 'PAUSED' : 'LIVE') : 'IDLE'}`,
+        ];
+        lines.forEach((line, i) => {
+            ctx.fillStyle = i % 2 === 0 ? '#00ff41' : '#00cc33';
+            ctx.fillText(line, 16, 50 + i * 26);
+        });
+        ctx.fillStyle = '#003300';
+        ctx.font = "10px 'Share Tech Mono'";
+        ctx.fillText("SIGNAL DIAGNOSTICS", 8, 16);
+    }
+
+    function updateMeasurements() {
+        if (!analyser) return;
+        let min = 255, max = 0, sumSq = 0;
+        for (let i = 0; i < dataArray.length; i++) {
+            if (dataArray[i] < min) min = dataArray[i];
+            if (dataArray[i] > max) max = dataArray[i];
+            const norm = (dataArray[i] - 128) / 128;
+            sumSq += norm * norm;
+        }
+        const vpp = ((max - min) / 128).toFixed(2);
+        const rms = Math.sqrt(sumSq / dataArray.length).toFixed(3);
+        const db = rms > 0 ? (20 * Math.log10(rms)).toFixed(1) : '-∞';
+        let peakIdx = 0, peakVal = 0;
+        for (let i = 2; i < freqArray.length; i++) {
+            if (freqArray[i] > peakVal) { peakVal = freqArray[i]; peakIdx = i; }
+        }
+        const freq = audioCtx ? Math.round(peakIdx * audioCtx.sampleRate / analyser.fftSize) : 0;
+        const vppEl = document.getElementById('mVpp');
+        const freqEl = document.getElementById('mFreq');
+        const rmsEl = document.getElementById('mRms');
+        const dbEl = document.getElementById('mDb');
+        freqEl.innerText = freq > 20 ? freq + 'Hz' : '---';
+        vppEl.innerText = vpp;
+        rmsEl.innerText = rms;
+        dbEl.innerText = db + 'dB';
+        vppEl.className = 'meas-value' + (vpp > 1.5 ? ' alert' : vpp > 0.8 ? ' warn' : '');
+        dbEl.className = 'meas-value' + (parseFloat(db) > -6 ? ' alert' : parseFloat(db) > -18 ? ' warn' : '');
+    }
+
+    function togglePause() {
+        paused = !paused;
+        pauseBtn.innerText = paused ? '▶ RESUME' : '⏸ PAUSE';
+        pauseBtn.className = paused ? 'btn-secondary' : 'btn-primary';
+        statusTxt.innerText = paused ? 'PAUSED' : 'LIVE';
+        if (paused) statusDot.classList.remove('active');
+        else statusDot.classList.add('active');
+    }
+
+    function switchTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.tab === tab);
+        });
+    }
+
+    function updateZoom(v) {
+        zoom = parseFloat(v);
+        document.getElementById('zoomVal').innerText = zoom.toFixed(1) + 'x';
+    }
+
+    function updateGain(v) {
+        gain = parseFloat(v);
+        document.getElementById('gainVal').innerText = gain.toFixed(1) + 'x';
+    }
+
+    function captureSnapshot() {
+        const link = document.createElement('a');
+        link.download = `labscope_${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    function resetScope() {
+        if (animId) cancelAnimationFrame(animId);
+        if (audioCtx) audioCtx.close();
+        audioCtx = analyser = dataArray = freqArray = null;
+        isRunning = false; paused = false;
+        statusTxt.innerText = 'STANDBY';
+        statusDot.classList.remove('active');
+        pauseBtn.disabled = true;
+        pauseBtn.innerText = '⏸ PAUSE';
+        pauseBtn.className = 'btn-primary';
+        document.getElementById('splash').style.display = 'flex';
+        ['mFreq','mVpp','mRms','mDb'].forEach(id => {
+            document.getElementById(id).innerText = '---';
+            document.getElementById(id).className = 'meas-value';
+        });
+        resize();
+    }
+
+    window.addEventListener('load', resize);
+    window.addEventListener('resize', resize);
+</script>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js?v=2.0')
+        .then(reg => {
+            reg.onupdatefound = () => {
+                const w = reg.installing;
+                w.onstatechange = () => {
+                    if (w.state === 'installed' && navigator.serviceWorker.controller) {
+                        if (confirm("New version available! Reload?")) window.location.reload();
+                    }
+                };
+            };
+        });
+    }
+</script>
+
+</body>
+</html>
