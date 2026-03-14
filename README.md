@@ -82,8 +82,6 @@ My_scope/
 ## ⚠️ AUX Input Safety
 - Never connect mains voltage directly 💀
 - Maximum safe input: < 1Vpp audio-level signals
-- Use a resistor voltage divider to step down signals
-- Recommended: 100kΩ / 10kΩ divider for signals up to 10V
 
 ## 🗺️ Roadmap
 - [ ] XY mode (Lissajous figures)
