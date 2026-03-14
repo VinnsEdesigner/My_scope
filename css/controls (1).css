@@ -1,24 +1,25 @@
-/* ── CONTROLS.CSS ── */
+/* ── CONTROLS.CSS — bottom action buttons only ── */
 #controls {
-    padding:       8px 12px;
+    padding:       9px 12px;
     background:    var(--panel);
     border-top:    1px solid var(--border);
     flex-shrink:   0;
 }
 
-.btn-row   { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; margin-bottom: 7px; }
-.btn-row-2 { display: grid; grid-template-columns: 1fr 1fr;     gap: 7px; }
+.btn-row   { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.btn-row-2 { display: grid; grid-template-columns: 1fr 1fr;     gap: 8px; }
 
 button {
-    font-family:    var(--font-mono);
+    font-family:    var(--font-ui);
     border:         1px solid var(--neon);
-    border-radius:  4px;
-    padding:        10px 4px;
-    font-size:      0.58rem;
+    border-radius:  5px;
+    padding:        12px 6px;
+    font-size:      0.72rem;
     letter-spacing: 1.5px;
     cursor:         pointer;
     transition:     all 0.15s;
     user-select:    none;
+    min-height:     44px;
 }
 button:active { transform: scale(0.96); }
 
