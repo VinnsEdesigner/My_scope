@@ -1,4 +1,4 @@
-const CACHE_VERSION = "lab-scope-v3.0";
+const CACHE_VERSION = "lab-scope-v1.0.0";
 
 const ASSETS = [
     "./", "./index.html", "./manifest.json",
