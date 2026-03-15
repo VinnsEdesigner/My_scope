@@ -1,0 +1,26 @@
+/* ── TABS.CSS ── */
+#tabs {
+    display:       flex;
+    background:    var(--panel);
+    border-bottom: 1px solid var(--border);
+    flex-shrink:   0;
+}
+
+.tab {
+    flex:           1;
+    padding:        7px 4px;
+    text-align:     center;
+    font-size:      0.65em;  /* CHANGED: rem → em */
+    letter-spacing: 2px;
+    color:          var(--text-dim);
+    cursor:         pointer;
+    border-bottom:  2px solid transparent;
+    transition:     all 0.2s;
+    user-select:    none;
+}
+.tab.active {
+    color:             var(--neon);
+    border-bottom-color: var(--neon);
+    text-shadow:       0 0 8px var(--neon-glow);
+}
+.tab:active { background: var(--neon-glow); }
