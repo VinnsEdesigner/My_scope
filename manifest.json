@@ -1,5 +1,5 @@
 {
-  "name": "Lab Scope v1.0.1",
+  "name": "Lab Scope v1.0.3",
   "short_name": "LabScope",
   "description": "Mobile oscilloscope powered by Web Audio API",
   "start_url": "./index.html",
