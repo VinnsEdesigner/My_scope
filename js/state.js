@@ -1,4 +1,4 @@
-// ── STATE.JS v1.0.2 ──
+// ── STATE.JS v1.0.3 ──
 const State = {
     // ── AUDIO ──
     audioCtx:   null,
