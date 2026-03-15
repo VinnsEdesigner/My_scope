@@ -82,7 +82,9 @@ const InfoView = {
 
         const ic   = State.infoTextColor  || '#00e5ff';
         const font = FONT_MAP[State.infoFont] || FONT_MAP.mono;
-        const sz   = Math.round(11 * (State.infoFontSize || 100) / 100);
+        // FIXED: Properly apply font size scaling
+        const baseSz = 11;
+        const sz = Math.round(baseSz * (State.infoFontSize || 100) / 100);
         const sc   = State.scopeTextColor || '#00ff41';
 
         // ── full-canvas glass backdrop ──

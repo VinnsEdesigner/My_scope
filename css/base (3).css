@@ -76,8 +76,10 @@
     --font-scope:   var(--font-scope-body);
     --font-data:    var(--font-info-body);
 
-    /* Font size scale */
-    --font-size-scale: 1.0;
+    /* Font size variables - set by UI sliders */
+    --settings-fs: 15px;  /* Settings panel text size */
+    --scope-fs:    15px;  /* Scope/main UI text size */
+    --info-fs:     15px;  /* Info overlay text size */
 }
 
 /* ── RESET + BODY ── */
@@ -88,7 +90,7 @@ body {
     background:     var(--bg);
     color:          var(--text-main);
     font-family:    var(--font-ui);
-    font-size:      calc(15px * var(--font-size-scale));
+    font-size:      var(--scope-fs);  /* Main body uses scope font size */
     position:       fixed;
     width:          100%;
     top: 0; left: 0;

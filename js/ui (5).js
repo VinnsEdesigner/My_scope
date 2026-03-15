@@ -1,4 +1,4 @@
-// ── UI.JS v1.0.3 ──
+// ── UI.JS v1.0.3 — FONT SIZE FIXED ──
 const UI = {
 
     toggleMenu() {
@@ -11,8 +11,6 @@ const UI = {
         document.querySelectorAll('.tab').forEach(t => {
             t.classList.toggle('active', t.dataset.tab === tab);
         });
-        // OSC controls always visible — overlay architecture means
-        // waveform is always running, controls always needed
         App.resize();
     },
 
@@ -144,14 +142,18 @@ const UI = {
 
     setSettingsFont(font) {
         State.settingsFont = font;
-        document.documentElement.style.setProperty('--font-ui', FONT_MAP[font] || FONT_MAP.retro);
+        const sideMenu = document.getElementById('sideMenu');
+        if (sideMenu) sideMenu.style.fontFamily = FONT_MAP[font] || FONT_MAP.retro;
         this._font('settings-font', font);
     },
 
     setSettingsFontSize(v) {
         State.settingsFontSize = parseInt(v);
-        const px = (13 * State.settingsFontSize / 100).toFixed(1);
-        document.documentElement.style.setProperty('--settings-fs', px + 'px');
+        const sideMenu = document.getElementById('sideMenu');
+        if (sideMenu) {
+            // Scale the base font size for the entire menu
+            sideMenu.style.fontSize = (State.settingsFontSize / 100) + 'rem';
+        }
         const el = document.getElementById('settingsSizeVal');
         if (el) el.innerText = v + '%';
     },
@@ -173,8 +175,8 @@ const UI = {
 
     setScopeFontSize(v) {
         State.scopeFontSize = parseInt(v);
-        const px = (15 * State.scopeFontSize / 100).toFixed(1);
-        document.documentElement.style.setProperty('--scope-fs', px + 'px');
+        // Apply to body which affects header, tabs, measurements, controls, canvas overlays
+        document.body.style.fontSize = (State.scopeFontSize / 100) + 'rem';
         const el = document.getElementById('scopeSizeVal');
         if (el) el.innerText = v + '%';
     },
@@ -193,6 +195,7 @@ const UI = {
 
     setInfoFontSize(v) {
         State.infoFontSize = parseInt(v);
+        // Info view uses this value directly in fft.js InfoView.drawOverlay
         const el = document.getElementById('infoSizeVal');
         if (el) el.innerText = v + '%';
     },
