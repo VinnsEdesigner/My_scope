@@ -1,3 +1,13 @@
+window.onerror = function(msg, src, line, col, err) {
+    document.body.insertAdjacentHTML('afterbegin',
+        `<div style="position:fixed;top:0;left:0;right:0;background:#ff1744;color:#fff;
+        padding:10px;font-size:12px;z-index:9999;font-family:monospace;word-break:break-all">
+        ERROR: ${msg}<br>Line: ${line} | ${src?.split('/').pop()}
+        </div>`
+    );
+    return false;
+};
+
 // ── APP.JS — main animation loop + boot ──
 const App = {
     canvas: null,
