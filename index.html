@@ -226,6 +226,55 @@
             </div>
         </div>
     </div>
+    <div class="mpanel" id="mpanel-theme">
+    <div class="mgroup">
+        <div class="mgroup-title">BACKGROUND THEME</div>
+        <div class="theme-grid">
+            <button class="theme-btn active" data-theme="dark"  onclick="UI.setTheme('dark')">🌑 DARK<br><small>Green on black</small></button>
+            <button class="theme-btn"        data-theme="light" onclick="UI.setTheme('light')">☀️ LIGHT<br><small>Dark on white</small></button>
+        </div>
+    </div>
+
+    <div class="mgroup">
+        <div class="mgroup-title">FONT SIZE</div>
+        <div class="mrow">
+            <span class="mlabel">SIZE</span>
+            <input type="range" id="fontSizeSlider" min="70" max="150" step="5" value="100"
+                   oninput="UI.updateFontSize(this.value)">
+            <span class="mval" id="fontSizeVal">100%</span>
+        </div>
+    </div>
+
+    <div class="mgroup">
+        <div class="mgroup-title">SETTINGS PANEL FONT</div>
+        <div class="theme-grid">
+            <button class="sfont-btn active" data-font="retro"  onclick="UI.setSettingsFont('retro')"  style="font-family:'Orbitron',monospace">ORBITRON<br><small>Techy</small></button>
+            <button class="sfont-btn"        data-font="mono"   onclick="UI.setSettingsFont('mono')"   style="font-family:'Share Tech Mono',monospace">MONO<br><small>Terminal</small></button>
+            <button class="sfont-btn"        data-font="modern" onclick="UI.setSettingsFont('modern')" style="font-family:'Rajdhani',sans-serif">RAJDHANI<br><small>Modern</small></button>
+            <button class="sfont-btn"        data-font="pro"    onclick="UI.setSettingsFont('pro')"    style="font-family:'Bebas Neue',sans-serif">BEBAS NEUE<br><small>Pro</small></button>
+        </div>
+    </div>
+
+    <div class="mgroup">
+        <div class="mgroup-title">SCOPE / MAIN UI FONT</div>
+        <div class="theme-grid">
+            <button class="scfont-btn active" data-font="retro"  onclick="UI.setScopeFont('retro')"  style="font-family:'Orbitron',monospace">ORBITRON<br><small>Techy</small></button>
+            <button class="scfont-btn"        data-font="mono"   onclick="UI.setScopeFont('mono')"   style="font-family:'Share Tech Mono',monospace">MONO<br><small>Terminal</small></button>
+            <button class="scfont-btn"        data-font="modern" onclick="UI.setScopeFont('modern')" style="font-family:'Rajdhani',sans-serif">RAJDHANI<br><small>Modern</small></button>
+            <button class="scfont-btn"        data-font="pro"    onclick="UI.setScopeFont('pro')"    style="font-family:'Bebas Neue',sans-serif">BEBAS NEUE<br><small>Pro</small></button>
+        </div>
+    </div>
+
+    <div class="mgroup">
+        <div class="mgroup-title">SIGNAL INFO FONT</div>
+        <div class="theme-grid">
+            <button class="ifont-btn active" data-font="retro"  onclick="UI.setInfoFont('retro')"  style="font-family:'Orbitron',monospace">ORBITRON<br><small>Techy</small></button>
+            <button class="ifont-btn"        data-font="mono"   onclick="UI.setInfoFont('mono')"   style="font-family:'Share Tech Mono',monospace">MONO<br><small>Terminal</small></button>
+            <button class="ifont-btn"        data-font="modern" onclick="UI.setInfoFont('modern')" style="font-family:'Rajdhani',sans-serif">RAJDHANI<br><small>Modern</small></button>
+            <button class="ifont-btn"        data-font="pro"    onclick="UI.setInfoFont('pro')"    style="font-family:'Bebas Neue',sans-serif">BEBAS NEUE<br><small>Pro</small></button>
+        </div>
+    </div>
+        </div>
  <div class="mpanel" id="mpanel-manual">
         <div class="mgroup">
             <div class="mgroup-title">GETTING STARTED</div>
