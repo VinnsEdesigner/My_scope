@@ -1,0 +1,90 @@
+/* ── BASE.CSS v1.0.0 ── */
+:root, [data-theme="dark"] {
+    --neon:          #00ff41;
+    --neon-dim:      #00aa2a;
+    --neon-glow:     rgba(0,255,65,0.4);
+    --amber:         #ffb300;
+    --cyan:          #00e5ff;
+    --red:           #ff1744;
+    --purple:        #e040fb;
+    --orange:        #ff6d00;
+    --bg:            #020c02;
+    --panel:         #030f03;
+    --panel2:        #051205;
+    --border:        rgba(0,255,65,0.2);
+    --border-bright: rgba(0,255,65,0.5);
+    --grid:          #001a00;
+    --text-dim:      #006600;
+    --text-mid:      #009900;
+    --text-main:     #00ff41;
+    --input-bg:      #011201;
+    --input-border:  rgba(0,255,65,0.4);
+    --card-bg:       #030f03;
+}
+[data-theme="light"] {
+    --neon:          #005500;
+    --neon-dim:      #003300;
+    --neon-glow:     rgba(0,85,0,0.3);
+    --amber:         #e65100;
+    --cyan:          #0277bd;
+    --red:           #c62828;
+    --purple:        #6a1b9a;
+    --orange:        #bf360c;
+    --bg:            #eef2ee;
+    --panel:         #dde8dd;
+    --panel2:        #cfdecf;
+    --border:        rgba(0,80,0,0.2);
+    --border-bright: rgba(0,80,0,0.45);
+    --grid:          #c5d8c5;
+    --text-dim:      #4a7a4a;
+    --text-mid:      #2d5c2d;
+    --text-main:     #003300;
+    --input-bg:      #ffffff;
+    --input-border:  rgba(0,80,0,0.35);
+    --card-bg:       #e4ede4;
+}
+:root {
+    --font-display: 'Orbitron', monospace;
+    --font-scope:   'Share Tech Mono', monospace;
+    --font-ui:      'Share Tech Mono', monospace;
+    --font-data:    'Share Tech Mono', monospace;
+}
+[data-font="mono"] {
+    --font-display: 'Share Tech Mono', monospace;
+    --font-scope:   'Share Tech Mono', monospace;
+    --font-ui:      'Share Tech Mono', monospace;
+    --font-data:    'Share Tech Mono', monospace;
+}
+[data-font="modern"] {
+    --font-display: 'Rajdhani', sans-serif;
+    --font-scope:   'Rajdhani', sans-serif;
+    --font-ui:      'Rajdhani', sans-serif;
+    --font-data:    'Rajdhani', sans-serif;
+}
+[data-font="pro"] {
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-scope:   'Rajdhani', sans-serif;
+    --font-ui:      'Rajdhani', sans-serif;
+    --font-data:    'Share Tech Mono', monospace;
+}
+[data-font="retro"] {
+    --font-display: 'Orbitron', monospace;
+    --font-scope:   'Share Tech Mono', monospace;
+    --font-ui:      'Share Tech Mono', monospace;
+    --font-data:    'Share Tech Mono', monospace;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+    background:     var(--bg);
+    color:          var(--text-main);
+    font-family:    var(--font-ui);
+    font-size:      15px;
+    position:       fixed;
+    width:          100%;
+    top: 0; left: 0;
+    display:        flex;
+    flex-direction: column;
+    overflow:       hidden;
+    transition:     background 0.3s, color 0.3s;
+}
