@@ -1,4 +1,4 @@
-// ── DEBUG.JS v1.0.0 MOBILE — Comprehensive Error Detection for Mobile ──
+// ── DEBUG.JS v1.0.3 MOBILE — Comprehensive Error Detection for Mobile ──
 
 const DebugSystem = {
     enabled: true,  // Set to false to disable in production
