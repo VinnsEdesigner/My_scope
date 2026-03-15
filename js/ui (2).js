@@ -1,7 +1,6 @@
-// ── UI.JS v1.0.0 ──
+// ── UI.JS v1.0.1 ──
 const UI = {
 
-    // ── MENU ──
     toggleMenu() {
         document.getElementById('sideMenu').classList.toggle('open');
         document.getElementById('menuOverlay').classList.toggle('open');
@@ -12,9 +11,9 @@ const UI = {
         document.querySelectorAll('.tab').forEach(t => {
             t.classList.toggle('active', t.dataset.tab === tab);
         });
-        // show/hide inline osc controls
-        const oscCtrl = document.getElementById('oscControls');
-        if (oscCtrl) oscCtrl.style.display = tab === 'osc' ? 'flex' : 'none';
+        // show inline osc controls ONLY on osc tab
+        const osc = document.getElementById('oscControls');
+        if (osc) osc.style.display = tab === 'osc' ? 'flex' : 'none';
     },
 
     switchMenuTab(tab) {
@@ -26,7 +25,6 @@ const UI = {
         });
     },
 
-    // ── PAUSE ──
     togglePause() {
         State.paused = !State.paused;
         const btn = document.getElementById('pauseBtn');
@@ -37,20 +35,14 @@ const UI = {
         else              document.getElementById('statusDot').classList.add('active');
     },
 
-    // ── ZOOM / GAIN ──
     updateZoom(v) {
         State.zoom = parseFloat(v);
-        document.getElementById('zoomVal').innerText  = State.zoom.toFixed(1) + 'x';
-        // sync menu slider if exists
-        const ms = document.getElementById('zoomSliderMenu');
-        if (ms) ms.value = v;
+        document.getElementById('zoomVal').innerText = State.zoom.toFixed(1) + 'x';
     },
 
     updateGain(v) {
         State.gain = parseFloat(v);
-        document.getElementById('gainVal').innerText  = State.gain.toFixed(1) + 'x';
-        const ms = document.getElementById('gainSliderMenu');
-        if (ms) ms.value = v;
+        document.getElementById('gainVal').innerText = State.gain.toFixed(1) + 'x';
     },
 
     updateSmoothing(v) {
@@ -69,15 +61,14 @@ const UI = {
             State.analyser.fftSize = State.fftSize;
             State.dataArray = new Uint8Array(State.analyser.fftSize);
             State.freqArray = new Uint8Array(State.analyser.frequencyBinCount);
-            const bFft = document.getElementById('bFftSize');
-            if (bFft) bFft.innerText = State.fftSize;
-            const bRes = document.getElementById('bFreqRes');
-            if (bRes && State.audioCtx) bRes.innerText =
-                (State.audioCtx.sampleRate / State.fftSize).toFixed(2) + 'Hz';
+            const b = document.getElementById('bFftSize');
+            if (b) b.innerText = State.fftSize;
+            const r = document.getElementById('bFreqRes');
+            if (r && State.audioCtx)
+                r.innerText = (State.audioCtx.sampleRate / State.fftSize).toFixed(2) + 'Hz';
         }
     },
 
-    // ── TIME/DIV ──
     adjustTimeDiv(dir) {
         if (State.timeDivIndex === null)
             State.timeDivIndex = Math.floor(TIME_DIV_STEPS.length / 2);
@@ -85,7 +76,6 @@ const UI = {
         const ms = TIME_DIV_STEPS[State.timeDivIndex];
         const label = ms >= 1 ? ms.toFixed(0) + 'ms' : (ms * 1000).toFixed(0) + 'µs';
         document.getElementById('timeDivVal').innerText = label;
-        document.getElementById('timeDivValMenu').innerText = label;
         if (State.audioCtx && State.dataArray) {
             const samplesPerDiv = (ms / 1000) * State.audioCtx.sampleRate;
             State.zoom = Math.max(1, Math.min(8,
@@ -95,21 +85,17 @@ const UI = {
         }
     },
 
-    // ── VOLT/DIV ──
     adjustVoltDiv(dir) {
         if (State.voltDivIndex === null)
             State.voltDivIndex = Math.floor(VOLT_DIV_STEPS.length / 2);
         State.voltDivIndex = Math.max(0, Math.min(VOLT_DIV_STEPS.length - 1, State.voltDivIndex + dir));
         const v = VOLT_DIV_STEPS[State.voltDivIndex];
-        const label = v.toFixed(2) + 'V';
-        document.getElementById('voltDivVal').innerText = label;
-        document.getElementById('voltDivValMenu').innerText = label;
+        document.getElementById('voltDivVal').innerText = v.toFixed(2) + 'V';
         State.gain = Math.max(1, Math.min(10, 1 / (v * 4)));
         document.getElementById('gainSlider').value = State.gain;
         document.getElementById('gainVal').innerText = State.gain.toFixed(1) + 'x';
     },
 
-    // ── SNAPSHOT ──
     captureSnapshot() {
         const canvas = document.getElementById('scopeCanvas');
         const link   = document.createElement('a');
@@ -125,14 +111,51 @@ const UI = {
         document.querySelectorAll('.theme-btn[data-theme]').forEach(b => {
             b.classList.toggle('active', b.dataset.theme === theme);
         });
+        // light theme — hide font theme pickers, force black
+        const fontSection = document.getElementById('fontThemeSection');
+        if (fontSection) {
+            fontSection.style.display = theme === 'light' ? 'none' : 'block';
+        }
     },
 
-    // ── FONT ──
-    setFont(font) {
-        State.font = font;
-        document.documentElement.setAttribute('data-font', font);
-        document.querySelectorAll('.font-btn[data-font]').forEach(b => {
+    // ── PER-SECTION FONTS ──
+    setFontSettings(font) {
+        State.fontSettings = font;
+        const f = FONT_MAP[font];
+        document.documentElement.style.setProperty('--font-settings-display', f);
+        document.documentElement.style.setProperty('--font-settings-body', f);
+        this._markFontBtn('settings', font);
+    },
+
+    setFontScope(font) {
+        State.fontScope = font;
+        const f = FONT_MAP[font];
+        document.documentElement.style.setProperty('--font-scope-display', f);
+        document.documentElement.style.setProperty('--font-scope-body', f);
+        document.documentElement.style.setProperty('--font-display', f);
+        document.documentElement.style.setProperty('--font-ui', f);
+        this._markFontBtn('scope', font);
+    },
+
+    setFontInfo(font) {
+        State.fontInfo = font;
+        const f = FONT_MAP[font];
+        document.documentElement.style.setProperty('--font-info-display', f);
+        document.documentElement.style.setProperty('--font-info-body', f);
+        document.documentElement.style.setProperty('--font-data', f);
+        this._markFontBtn('info', font);
+    },
+
+    _markFontBtn(section, font) {
+        document.querySelectorAll(`.font-btn-${section}`).forEach(b => {
             b.classList.toggle('active', b.dataset.font === font);
         });
+    },
+
+    // ── FONT SIZE ──
+    updateFontSize(v) {
+        State.fontSizeScale = parseFloat(v);
+        document.documentElement.style.setProperty('--font-size-scale', State.fontSizeScale);
+        document.getElementById('fontSizeVal').innerText = Math.round(State.fontSizeScale * 100) + '%';
     },
 };
