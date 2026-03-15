@@ -1,4 +1,4 @@
-// ── UI.JS v1.0.4 — FONT SIZE FIXED ──
+// ── UI.JS v1.0.5 — FONT SIZE PROPERLY FIXED ──
 const UI = {
 
     toggleMenu() {
@@ -148,14 +148,11 @@ const UI = {
     },
 
     setSettingsFontSize(v) {
-    State.settingsFontSize = parseInt(v);
-    const sideMenu = document.getElementById('sideMenu');
-    if (sideMenu) {
-        // FIXED: Use !important to override CSS
-        sideMenu.style.setProperty('font-size', (15 * State.settingsFontSize / 100) + 'px', 'important');
-    }
-    const el = document.getElementById('settingsSizeVal');
-    if (el) el.innerText = v + '%';
+        State.settingsFontSize = parseInt(v);
+        // FIXED: Update CSS variable instead of fighting inline styles
+        document.documentElement.style.setProperty('--settings-fs', (15 * State.settingsFontSize / 100) + 'px');
+        const el = document.getElementById('settingsSizeVal');
+        if (el) el.innerText = v + '%';
     },
 
     // ══ SCOPE SECTION ══
@@ -174,10 +171,11 @@ const UI = {
     },
 
     setScopeFontSize(v) {
-    State.scopeFontSize = parseInt(v);
-    document.body.style.setProperty('font-size', (15 * State.scopeFontSize / 100) + 'px', 'important');
-    const el = document.getElementById('scopeSizeVal');
-    if (el) el.innerText = v + '%';
+        State.scopeFontSize = parseInt(v);
+        // FIXED: Update CSS variable instead of fighting inline styles
+        document.documentElement.style.setProperty('--scope-fs', (15 * State.scopeFontSize / 100) + 'px');
+        const el = document.getElementById('scopeSizeVal');
+        if (el) el.innerText = v + '%';
     },
 
     // ══ INFO SECTION ══
