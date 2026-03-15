@@ -1,4 +1,4 @@
-# 🔬 Lab Scope v1.0.3 (Mobile Edition)
+# 🔬 Lab Scope v1.0.5 (Mobile Edition)
 
 A web-based oscilloscope built for electronics hobbyists with no PC — just your smartphone and an AUX jack ⚡
 
