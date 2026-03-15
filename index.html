@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lab Scope v1.0.1</title>
+    <title>Lab Scope v1.0.2</title>
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/base.css">
@@ -225,8 +225,7 @@
                 <button class="mbtn-full btn-danger-full" onclick="Calibration.reset()">↺ RESET TO DEFAULT</button>
             </div>
         </div>
-    </div>
-    <div class="mpanel" id="mpanel-theme">
+    </div><div class="mpanel" id="mpanel-theme">
     <div class="mgroup">
         <div class="mgroup-title">BACKGROUND THEME</div>
         <div class="theme-grid">
@@ -239,8 +238,7 @@
         <div class="mgroup-title">FONT SIZE</div>
         <div class="mrow">
             <span class="mlabel">SIZE</span>
-            <input type="range" id="fontSizeSlider" min="70" max="150" step="5" value="100"
-                   oninput="UI.updateFontSize(this.value)">
+            <input type="range" id="fontSizeSlider" min="70" max="150" step="5" value="100" oninput="UI.updateFontSize(this.value)">
             <span class="mval" id="fontSizeVal">100%</span>
         </div>
     </div>
@@ -274,7 +272,87 @@
             <button class="ifont-btn"        data-font="pro"    onclick="UI.setInfoFont('pro')"    style="font-family:'Bebas Neue',sans-serif">BEBAS NEUE<br><small>Pro</small></button>
         </div>
     </div>
+
+    <!-- ── COLOR PICKERS ── -->
+    <div class="mgroup">
+        <div class="mgroup-title">WAVEFORM COLOR</div>
+        <div class="swatch-row">
+            <button class="swatch-btn active" data-group="wave" data-color="#00ff41" onclick="UI.setWaveColor('#00ff41')" style="background:#00ff41"></button>
+            <button class="swatch-btn"        data-group="wave" data-color="#00e5ff" onclick="UI.setWaveColor('#00e5ff')" style="background:#00e5ff"></button>
+            <button class="swatch-btn"        data-group="wave" data-color="#ffb300" onclick="UI.setWaveColor('#ffb300')" style="background:#ffb300"></button>
+            <button class="swatch-btn"        data-group="wave" data-color="#ff1744" onclick="UI.setWaveColor('#ff1744')" style="background:#ff1744"></button>
+            <button class="swatch-btn"        data-group="wave" data-color="#e040fb" onclick="UI.setWaveColor('#e040fb')" style="background:#e040fb"></button>
+            <button class="swatch-btn"        data-group="wave" data-color="#ffffff" onclick="UI.setWaveColor('#ffffff')" style="background:#ffffff"></button>
         </div>
+    </div>
+
+    <div class="mgroup">
+        <div class="mgroup-title">UI ACCENT COLOR</div>
+        <div class="swatch-row">
+            <button class="swatch-btn active" data-group="accent" data-color="#00ff41" onclick="UI.setAccentColor('#00ff41')" style="background:#00ff41"></button>
+            <button class="swatch-btn"        data-group="accent" data-color="#00e5ff" onclick="UI.setAccentColor('#00e5ff')" style="background:#00e5ff"></button>
+            <button class="swatch-btn"        data-group="accent" data-color="#ffb300" onclick="UI.setAccentColor('#ffb300')" style="background:#ffb300"></button>
+            <button class="swatch-btn"        data-group="accent" data-color="#ff1744" onclick="UI.setAccentColor('#ff1744')" style="background:#ff1744"></button>
+            <button class="swatch-btn"        data-group="accent" data-color="#e040fb" onclick="UI.setAccentColor('#e040fb')" style="background:#e040fb"></button>
+            <button class="swatch-btn"        data-group="accent" data-color="#ffffff" onclick="UI.setAccentColor('#ffffff')" style="background:#ffffff"></button>
+        </div>
+    </div>
+
+    <div class="mgroup">
+        <div class="mgroup-title">MEASUREMENTS COLOR</div>
+        <div class="swatch-row">
+            <button class="swatch-btn"        data-group="meas" data-color="#00ff41" onclick="UI.setMeasColor('#00ff41')" style="background:#00ff41"></button>
+            <button class="swatch-btn active" data-group="meas" data-color="#00e5ff" onclick="UI.setMeasColor('#00e5ff')" style="background:#00e5ff"></button>
+            <button class="swatch-btn"        data-group="meas" data-color="#ffb300" onclick="UI.setMeasColor('#ffb300')" style="background:#ffb300"></button>
+            <button class="swatch-btn"        data-group="meas" data-color="#ff1744" onclick="UI.setMeasColor('#ff1744')" style="background:#ff1744"></button>
+            <button class="swatch-btn"        data-group="meas" data-color="#e040fb" onclick="UI.setMeasColor('#e040fb')" style="background:#e040fb"></button>
+            <button class="swatch-btn"        data-group="meas" data-color="#ffffff" onclick="UI.setMeasColor('#ffffff')" style="background:#ffffff"></button>
+        </div>
+    </div>
+
+    <div class="mgroup">
+        <div class="mgroup-title">GRID COLOR</div>
+        <div class="swatch-row">
+            <button class="swatch-btn active" data-group="grid" data-color="#001800" onclick="UI.setGridColor('#001800')" style="background:#001800;border:1px solid #005500"></button>
+            <button class="swatch-btn"        data-group="grid" data-color="#001a2e" onclick="UI.setGridColor('#001a2e')" style="background:#001a2e;border:1px solid #004466"></button>
+            <button class="swatch-btn"        data-group="grid" data-color="#1a0000" onclick="UI.setGridColor('#1a0000')" style="background:#1a0000;border:1px solid #550000"></button>
+            <button class="swatch-btn"        data-group="grid" data-color="#1a001a" onclick="UI.setGridColor('#1a001a')" style="background:#1a001a;border:1px solid #440044"></button>
+            <button class="swatch-btn"        data-group="grid" data-color="#111111" onclick="UI.setGridColor('#111111')" style="background:#111111;border:1px solid #444"></button>
+            <button class="swatch-btn"        data-group="grid" data-color="#002233" onclick="UI.setGridColor('#002233')" style="background:#002233;border:1px solid #005566"></button>
+        </div>
+    </div>
+
+    <div class="mgroup">
+        <div class="mgroup-title">TAB COLORS</div>
+        <div class="swatch-label">OSC TAB</div>
+        <div class="swatch-row">
+            <button class="swatch-btn active" data-group="osctab" data-color="#00ff41" onclick="UI.setOscTabColor('#00ff41')" style="background:#00ff41"></button>
+            <button class="swatch-btn"        data-group="osctab" data-color="#00e5ff" onclick="UI.setOscTabColor('#00e5ff')" style="background:#00e5ff"></button>
+            <button class="swatch-btn"        data-group="osctab" data-color="#ffb300" onclick="UI.setOscTabColor('#ffb300')" style="background:#ffb300"></button>
+            <button class="swatch-btn"        data-group="osctab" data-color="#ff1744" onclick="UI.setOscTabColor('#ff1744')" style="background:#ff1744"></button>
+            <button class="swatch-btn"        data-group="osctab" data-color="#e040fb" onclick="UI.setOscTabColor('#e040fb')" style="background:#e040fb"></button>
+            <button class="swatch-btn"        data-group="osctab" data-color="#ffffff" onclick="UI.setOscTabColor('#ffffff')" style="background:#ffffff"></button>
+        </div>
+        <div class="swatch-label">FFT TAB</div>
+        <div class="swatch-row">
+            <button class="swatch-btn active" data-group="ffttab" data-color="#00ff41" onclick="UI.setFftTabColor('#00ff41')" style="background:#00ff41"></button>
+            <button class="swatch-btn"        data-group="ffttab" data-color="#00e5ff" onclick="UI.setFftTabColor('#00e5ff')" style="background:#00e5ff"></button>
+            <button class="swatch-btn"        data-group="ffttab" data-color="#ffb300" onclick="UI.setFftTabColor('#ffb300')" style="background:#ffb300"></button>
+            <button class="swatch-btn"        data-group="ffttab" data-color="#ff1744" onclick="UI.setFftTabColor('#ff1744')" style="background:#ff1744"></button>
+            <button class="swatch-btn"        data-group="ffttab" data-color="#e040fb" onclick="UI.setFftTabColor('#e040fb')" style="background:#e040fb"></button>
+            <button class="swatch-btn"        data-group="ffttab" data-color="#ffffff" onclick="UI.setFftTabColor('#ffffff')" style="background:#ffffff"></button>
+        </div>
+        <div class="swatch-label">INFO TAB</div>
+        <div class="swatch-row">
+            <button class="swatch-btn active" data-group="infotab" data-color="#00ff41" onclick="UI.setInfoTabColor('#00ff41')" style="background:#00ff41"></button>
+            <button class="swatch-btn"        data-group="infotab" data-color="#00e5ff" onclick="UI.setInfoTabColor('#00e5ff')" style="background:#00e5ff"></button>
+            <button class="swatch-btn"        data-group="infotab" data-color="#ffb300" onclick="UI.setInfoTabColor('#ffb300')" style="background:#ffb300"></button>
+            <button class="swatch-btn"        data-group="infotab" data-color="#ff1744" onclick="UI.setInfoTabColor('#ff1744')" style="background:#ff1744"></button>
+            <button class="swatch-btn"        data-group="infotab" data-color="#e040fb" onclick="UI.setInfoTabColor('#e040fb')" style="background:#e040fb"></button>
+            <button class="swatch-btn"        data-group="infotab" data-color="#ffffff" onclick="UI.setInfoTabColor('#ffffff')" style="background:#ffffff"></button>
+        </div>
+    </div>
+    </div>
  <div class="mpanel" id="mpanel-manual">
         <div class="mgroup">
             <div class="mgroup-title">GETTING STARTED</div>
@@ -337,7 +415,7 @@
         <div class="mgroup">
             <div class="mgroup-title">APPLICATION</div>
             <div class="build-row"><span>NAME</span><span>Lab Scope</span></div>
-            <div class="build-row"><span>VERSION</span><span id="bVersion">v1.0.1</span></div>
+            <div class="build-row"><span>VERSION</span><span id="bVersion">v1.0.2</span></div>
             <div class="build-row"><span>RELEASE</span><span>STABLE</span></div>
             <div class="build-row"><span>BUILD DATE</span><span>2026-03-15</span></div>
         </div>
