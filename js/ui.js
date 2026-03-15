@@ -1,4 +1,4 @@
-// ── UI.JS v1.0.5 — FONT SIZE PROPERLY FIXED ──
+// ── UI.JS v1.0.3 — FONT SIZE PROPERLY FIXED ──
 const UI = {
 
     toggleMenu() {
