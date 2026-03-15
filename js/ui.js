@@ -146,17 +146,7 @@ const UI = {
         if (sideMenu) sideMenu.style.fontFamily = FONT_MAP[font] || FONT_MAP.retro;
         this._font('settings-font', font);
     },
-
-    setSettingsFontSize(v) {
-        State.settingsFontSize = parseInt(v);
-        const sideMenu = document.getElementById('sideMenu');
-        if (sideMenu) {
-            // Scale the base font size for the entire menu
-            sideMenu.style.fontSize = (State.settingsFontSize / 100) + 'rem';
-        }
-        const el = document.getElementById('settingsSizeVal');
-        if (el) el.innerText = v + '%';
-    },
+  setSettingsFontSize(v) {      State.settingsFontSize = parseInt(v);       const sideMenu = document.getElementById('sideMenu')       if (sideMenu) {          // Scale the base font size for the entire menu          sideMenu.style.fontSize = (State.settingsFontSize / 100) + 'rem        }      const el = document.getElementById('settingsSizeVal');
 
     // ══ SCOPE SECTION ══
     setScopeTextColor(color) {
