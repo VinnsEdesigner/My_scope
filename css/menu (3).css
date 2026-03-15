@@ -1,4 +1,4 @@
-/* ── MENU.CSS ── */
+/* ── MENU.CSS v1.0.2 ── */
 
 #menuOverlay {
     display:    none;
@@ -27,7 +27,6 @@
 }
 #sideMenu.open { transform: translateX(0); }
 
-/* ── MENU HEADER ── */
 .menu-header {
     display:         flex;
     align-items:     center;
@@ -57,7 +56,6 @@
     min-height:    38px;
 }
 
-/* ── MENU TABS ── */
 #menuTabs {
     display:       flex;
     flex-wrap:     nowrap;
@@ -84,13 +82,9 @@
     display:        flex;
     align-items:    center;
 }
-.mtab.active {
-    color:               var(--neon);
-    border-bottom-color: var(--neon);
-}
+.mtab.active { color: var(--neon); border-bottom-color: var(--neon); }
 .mtab:active { background: var(--neon-glow); }
 
-/* ── PANELS — scrollable ── */
 .mpanel {
     display:    none;
     flex:       1;
@@ -104,7 +98,6 @@
 .mpanel::-webkit-scrollbar-thumb { background: var(--neon-dim); border-radius: 2px; }
 .mpanel.active { display: block; }
 
-/* ── GROUPS ── */
 .mgroup {
     border:        1px solid var(--border);
     border-radius: 6px;
@@ -122,7 +115,6 @@
     font-family:    var(--font-display);
 }
 
-/* ── ROWS ── */
 .mrow {
     display:         flex;
     align-items:     center;
@@ -133,12 +125,8 @@
     min-height:      46px;
 }
 .mrow:last-child { border-bottom: none; }
-.mrow-right {
-    display:     flex;
-    align-items: center;
-    gap:         8px;
-}
-.mrow-btn { padding: 10px 12px; }
+.mrow-right { display: flex; align-items: center; gap: 8px; }
+.mrow-btn   { padding: 10px 12px; }
 
 .mlabel {
     font-size:      0.68rem;
@@ -157,7 +145,6 @@
     text-align:  right;
 }
 
-/* ── SLIDERS ── */
 .mrow input[type=range] {
     flex:               1;
     -webkit-appearance: none;
@@ -169,15 +156,13 @@
 }
 .mrow input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width:         20px;
-    height:        20px;
+    width:         20px; height: 20px;
     border-radius: 50%;
     background:    var(--neon);
     box-shadow:    0 0 5px var(--neon-glow);
     cursor:        pointer;
 }
 
-/* ── INPUTS — bigger, readable ── */
 .minput {
     flex:           1;
     background:     var(--input-bg);
@@ -194,7 +179,6 @@
 .minput:focus { border-color: var(--neon); box-shadow: 0 0 6px var(--neon-glow); }
 .minput::placeholder { color: var(--text-dim); }
 
-/* ── SMALL BUTTONS ── */
 .mbtn {
     background:    transparent;
     border:        1px solid var(--border);
@@ -204,8 +188,7 @@
     padding:       6px 12px;
     border-radius: 4px;
     cursor:        pointer;
-    min-width:     38px;
-    min-height:    38px;
+    min-width:     38px; min-height: 38px;
 }
 .mbtn:active { background: var(--neon-glow); }
 
@@ -222,12 +205,7 @@
     transition:     all 0.2s;
     min-height:     36px;
 }
-.mbtn-sel.active {
-    background:   var(--neon);
-    color:        #000;
-    border-color: var(--neon);
-    font-weight:  bold;
-}
+.mbtn-sel.active { background: var(--neon); color: #000; border-color: var(--neon); font-weight: bold; }
 .mbtn-sel:active { opacity: 0.8; }
 
 .mbtn-full {
@@ -248,13 +226,13 @@
 .btn-danger-full       { border-color: var(--red); color: var(--red); }
 .btn-danger-full:active{ background: rgba(255,23,68,0.2); }
 
-/* ── THEME PICKER ── */
 .theme-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap:     8px;
     padding: 10px 12px;
 }
+
 .theme-btn {
     padding:        10px 8px;
     border-radius:  5px;
@@ -272,25 +250,15 @@
 .theme-btn.active { border-color: var(--neon); color: var(--neon); background: var(--neon-glow); }
 .theme-btn:active { opacity: 0.8; }
 
-.font-section-label {
-    padding:     6px 12px 2px;
-    font-size:   0.6rem;
-    color:       var(--text-dim);
-    letter-spacing: 1.5px;
-    font-family: var(--font-ui);
-}
-
-/* ── CALIBRATION INFO ── */
 .mcalib-info {
-    padding:     10px 12px;
-    font-size:   0.68rem;
-    color:       var(--text-mid);
-    line-height: 1.7;
+    padding:       10px 12px;
+    font-size:     0.68rem;
+    color:         var(--text-mid);
+    line-height:   1.7;
     border-bottom: 1px solid rgba(0,255,65,0.06);
-    font-family: var(--font-ui);
+    font-family:   var(--font-ui);
 }
 
-/* ── MANUAL TEXT ── */
 .manual-text {
     padding:     10px 12px;
     font-size:   0.7rem;
@@ -300,7 +268,6 @@
 }
 .manual-text b { color: var(--neon); }
 
-/* ── BUILD INFO ── */
 .build-row {
     display:         flex;
     justify-content: space-between;
@@ -314,20 +281,14 @@
 }
 .build-row:last-child { border-bottom: none; }
 .build-row span:last-child { color: var(--neon); font-family: var(--font-display); font-size: 0.72rem; }
-.build-row-full {
-    padding:     7px 12px;
-    font-size:   0.68rem;
-    color:       var(--text-mid);
-    font-family: var(--font-ui);
-}
+.build-row-full { padding: 7px 12px; font-size: 0.68rem; color: var(--text-mid); font-family: var(--font-ui); }
 
-/* creator card at bottom of build */
 .creator-card {
-    margin:        14px 12px 4px;
-    border:        1px solid var(--border-bright);
+    margin: 14px 12px 4px;
+    border: 1px solid var(--border-bright);
     border-radius: 6px;
-    overflow:      hidden;
-    background:    var(--panel);
+    overflow: hidden;
+    background: var(--panel);
 }
 .creator-card-header {
     padding:        8px 12px;
@@ -338,9 +299,7 @@
     border-bottom:  1px solid var(--border);
     background:     rgba(255,179,0,0.08);
 }
-.creator-card-body {
-    padding: 10px 12px;
-}
+.creator-card-body { padding: 10px 12px; }
 .creator-row {
     display:       flex;
     gap:           8px;
@@ -353,3 +312,69 @@
 .creator-row:last-child { border-bottom: none; }
 .creator-key   { color: var(--text-dim); min-width: 72px; }
 .creator-value { color: var(--neon); }
+
+/* ══════════════════════════════════════
+   COLOR SWATCHES
+══════════════════════════════════════ */
+.swatch-row {
+    display:   flex;
+    gap:       10px;
+    padding:   12px;
+    flex-wrap: wrap;
+}
+
+.swatch-btn {
+    width:         30px;
+    height:        30px;
+    border-radius: 50%;
+    border:        2px solid transparent;
+    cursor:        pointer;
+    transition:    all 0.2s;
+    flex-shrink:   0;
+}
+.swatch-btn.active {
+    border-color: #fff;
+    box-shadow:   0 0 8px rgba(255,255,255,0.7);
+    transform:    scale(1.22);
+}
+.swatch-btn:active { transform: scale(0.9); }
+
+/* ══════════════════════════════════════
+   FONT PICKER BUTTONS
+══════════════════════════════════════ */
+.font-pick-btn {
+    padding:        10px 6px;
+    border-radius:  5px;
+    border:         1px solid var(--border);
+    background:     transparent;
+    color:          var(--text-mid);
+    font-size:      0.63rem;
+    letter-spacing: 0.5px;
+    cursor:         pointer;
+    text-align:     center;
+    transition:     all 0.2s;
+    min-height:     52px;
+    line-height:    1.4;
+}
+.font-pick-btn small { display: block; opacity: 0.7; font-size: 0.55rem; }
+.font-pick-btn.active {
+    border-color: var(--neon);
+    color:        var(--neon);
+    background:   var(--neon-glow);
+}
+.font-pick-btn:active { opacity: 0.75; }
+
+/* ══════════════════════════════════════
+   SECTION DIVIDER HEADERS
+══════════════════════════════════════ */
+.section-header {
+    font-family:    var(--font-display);
+    font-size:      0.75rem;
+    font-weight:    700;
+    letter-spacing: 2.5px;
+    color:          var(--amber);
+    padding:        16px 14px 8px;
+    border-top:     1px solid var(--border);
+    margin-top:     4px;
+    text-shadow:    0 0 6px rgba(255,179,0,0.4);
+}

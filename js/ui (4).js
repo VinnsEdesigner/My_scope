@@ -1,4 +1,4 @@
-// ── UI.JS v1.0.1 ──
+// ── UI.JS v1.0.3 ──
 const UI = {
 
     toggleMenu() {
@@ -11,8 +11,8 @@ const UI = {
         document.querySelectorAll('.tab').forEach(t => {
             t.classList.toggle('active', t.dataset.tab === tab);
         });
-        const oscCtrl = document.getElementById('oscControls');
-        if (oscCtrl) oscCtrl.style.display = tab === 'osc' ? 'flex' : 'none';
+        // OSC controls always visible — overlay architecture means
+        // waveform is always running, controls always needed
         App.resize();
     },
 
@@ -38,15 +38,11 @@ const UI = {
     updateZoom(v) {
         State.zoom = parseFloat(v);
         document.getElementById('zoomVal').innerText = State.zoom.toFixed(1) + 'x';
-        const ms = document.getElementById('zoomSliderMenu');
-        if (ms) ms.value = v;
     },
 
     updateGain(v) {
         State.gain = parseFloat(v);
         document.getElementById('gainVal').innerText = State.gain.toFixed(1) + 'x';
-        const ms = document.getElementById('gainSliderMenu');
-        if (ms) ms.value = v;
     },
 
     updateSmoothing(v) {
@@ -68,8 +64,8 @@ const UI = {
             const bFft = document.getElementById('bFftSize');
             if (bFft) bFft.innerText = State.fftSize;
             const bRes = document.getElementById('bFreqRes');
-            if (bRes && State.audioCtx) bRes.innerText =
-                (State.audioCtx.sampleRate / State.fftSize).toFixed(2) + 'Hz';
+            if (bRes && State.audioCtx)
+                bRes.innerText = (State.audioCtx.sampleRate / State.fftSize).toFixed(2) + 'Hz';
         }
     },
 
@@ -77,16 +73,15 @@ const UI = {
         if (State.timeDivIndex === null)
             State.timeDivIndex = Math.floor(TIME_DIV_STEPS.length / 2);
         State.timeDivIndex = Math.max(0, Math.min(TIME_DIV_STEPS.length - 1, State.timeDivIndex + dir));
-        const ms = TIME_DIV_STEPS[State.timeDivIndex];
+        const ms    = TIME_DIV_STEPS[State.timeDivIndex];
         const label = ms >= 1 ? ms.toFixed(0) + 'ms' : (ms * 1000).toFixed(0) + 'µs';
         document.getElementById('timeDivVal').innerText = label;
         const menu = document.getElementById('timeDivValMenu');
         if (menu) menu.innerText = label;
         if (State.audioCtx && State.dataArray) {
-            const samplesPerDiv = (ms / 1000) * State.audioCtx.sampleRate;
-            State.zoom = Math.max(1, Math.min(8,
-                State.dataArray.length / (samplesPerDiv * 10)));
-            document.getElementById('zoomSlider').value = State.zoom;
+            const spd  = (ms / 1000) * State.audioCtx.sampleRate;
+            State.zoom = Math.max(1, Math.min(8, State.dataArray.length / (spd * 10)));
+            document.getElementById('zoomSlider').value  = State.zoom;
             document.getElementById('zoomVal').innerText = State.zoom.toFixed(1) + 'x';
         }
     },
@@ -95,13 +90,13 @@ const UI = {
         if (State.voltDivIndex === null)
             State.voltDivIndex = Math.floor(VOLT_DIV_STEPS.length / 2);
         State.voltDivIndex = Math.max(0, Math.min(VOLT_DIV_STEPS.length - 1, State.voltDivIndex + dir));
-        const v = VOLT_DIV_STEPS[State.voltDivIndex];
+        const v     = VOLT_DIV_STEPS[State.voltDivIndex];
         const label = v.toFixed(2) + 'V';
         document.getElementById('voltDivVal').innerText = label;
         const menu = document.getElementById('voltDivValMenu');
         if (menu) menu.innerText = label;
         State.gain = Math.max(1, Math.min(10, 1 / (v * 4)));
-        document.getElementById('gainSlider').value = State.gain;
+        document.getElementById('gainSlider').value  = State.gain;
         document.getElementById('gainVal').innerText = State.gain.toFixed(1) + 'x';
     },
 
@@ -113,7 +108,7 @@ const UI = {
         link.click();
     },
 
-    // ── THEME ──
+    // ══ THEME ══
     setTheme(theme) {
         State.theme = theme;
         document.documentElement.setAttribute('data-theme', theme);
@@ -122,56 +117,96 @@ const UI = {
         });
     },
 
-    // ── GLOBAL FONT ──
-    setFont(font) {
-        State.font = font;
-        document.documentElement.setAttribute('data-font', font);
-        document.querySelectorAll('.font-btn[data-font]').forEach(b => {
-            b.classList.toggle('active', b.dataset.font === font);
-        });
+    // ══ CANVAS COLORS ══
+    setWaveColor(color) {
+        State.waveColor = color;
+        this._swatch('wave', color);
     },
 
-    // ── SETTINGS PANEL FONT ──
+    setGridColor(color) {
+        State.gridColor = color;
+        this._swatch('grid', color);
+    },
+
+    setMeasColor(color) {
+        State.measColor = color;
+        document.documentElement.style.setProperty('--cyan', color);
+        this._swatch('meas', color);
+    },
+
+    // ══ SETTINGS SECTION ══
+    setSettingsTextColor(color) {
+        State.settingsTextColor = color;
+        document.documentElement.style.setProperty('--text-mid',  color);
+        document.documentElement.style.setProperty('--text-main', color);
+        this._swatch('settings-text', color);
+    },
+
     setSettingsFont(font) {
-        document.documentElement.style.setProperty('--font-ui', this._fontStack(font));
-        document.querySelectorAll('.sfont-btn').forEach(b => {
-            b.classList.toggle('active', b.dataset.font === font);
-        });
+        State.settingsFont = font;
+        document.documentElement.style.setProperty('--font-ui', FONT_MAP[font] || FONT_MAP.retro);
+        this._font('settings-font', font);
     },
 
-    // ── SCOPE / MAIN UI FONT ──
-    setScopeFont(font) {
-        document.documentElement.style.setProperty('--font-scope', this._fontStack(font));
-        document.documentElement.style.setProperty('--font-display', this._fontStack(font));
-        document.querySelectorAll('.scfont-btn').forEach(b => {
-            b.classList.toggle('active', b.dataset.font === font);
-        });
-    },
-
-    // ── SIGNAL INFO FONT ──
-    setInfoFont(font) {
-        document.documentElement.style.setProperty('--font-data', this._fontStack(font));
-        document.querySelectorAll('.ifont-btn').forEach(b => {
-            b.classList.toggle('active', b.dataset.font === font);
-        });
-    },
-
-    // ── FONT SIZE ──
-    updateFontSize(v) {
-        const scale = parseFloat(v) / 100;
-        document.documentElement.style.fontSize = (15 * scale) + 'px';
-        const el = document.getElementById('fontSizeVal');
+    setSettingsFontSize(v) {
+        State.settingsFontSize = parseInt(v);
+        const px = (13 * State.settingsFontSize / 100).toFixed(1);
+        document.documentElement.style.setProperty('--settings-fs', px + 'px');
+        const el = document.getElementById('settingsSizeVal');
         if (el) el.innerText = v + '%';
     },
 
-    // ── HELPER ──
-    _fontStack(font) {
-        const map = {
-            retro:  "'Orbitron', monospace",
-            mono:   "'Share Tech Mono', monospace",
-            modern: "'Rajdhani', sans-serif",
-            pro:    "'Bebas Neue', sans-serif"
-        };
-        return map[font] || map.retro;
+    // ══ SCOPE SECTION ══
+    setScopeTextColor(color) {
+        State.scopeTextColor = color;
+        document.documentElement.style.setProperty('--neon',      color);
+        document.documentElement.style.setProperty('--neon-glow', color + '55');
+        this._swatch('scope-text', color);
+    },
+
+    setScopeFont(font) {
+        State.scopeFont = font;
+        document.documentElement.style.setProperty('--font-display', FONT_MAP[font] || FONT_MAP.retro);
+        document.documentElement.style.setProperty('--font-scope',   FONT_MAP[font] || FONT_MAP.retro);
+        this._font('scope-font', font);
+    },
+
+    setScopeFontSize(v) {
+        State.scopeFontSize = parseInt(v);
+        const px = (15 * State.scopeFontSize / 100).toFixed(1);
+        document.documentElement.style.setProperty('--scope-fs', px + 'px');
+        const el = document.getElementById('scopeSizeVal');
+        if (el) el.innerText = v + '%';
+    },
+
+    // ══ INFO SECTION ══
+    setInfoTextColor(color) {
+        State.infoTextColor = color;
+        this._swatch('info-text', color);
+    },
+
+    setInfoFont(font) {
+        State.infoFont = font;
+        document.documentElement.style.setProperty('--font-data', FONT_MAP[font] || FONT_MAP.mono);
+        this._font('info-font', font);
+    },
+
+    setInfoFontSize(v) {
+        State.infoFontSize = parseInt(v);
+        const el = document.getElementById('infoSizeVal');
+        if (el) el.innerText = v + '%';
+    },
+
+    // ══ HELPERS ══
+    _swatch(group, value) {
+        document.querySelectorAll(`.swatch-btn[data-group="${group}"]`).forEach(b => {
+            b.classList.toggle('active', b.dataset.color === value);
+        });
+    },
+
+    _font(group, value) {
+        document.querySelectorAll(`.font-pick-btn[data-group="${group}"]`).forEach(b => {
+            b.classList.toggle('active', b.dataset.font === value);
+        });
     },
 };

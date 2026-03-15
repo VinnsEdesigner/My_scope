@@ -1,14 +1,13 @@
+// ── APP.JS v1.0.3 — overlay architecture ──
 window.onerror = function(msg, src, line, col, err) {
     document.body.insertAdjacentHTML('afterbegin',
         `<div style="position:fixed;top:0;left:0;right:0;background:#ff1744;color:#fff;
         padding:10px;font-size:12px;z-index:9999;font-family:monospace;word-break:break-all">
-        ERROR: ${msg}<br>Line: ${line} | ${src?.split('/').pop()}
-        </div>`
+        ERR: ${msg} | Line ${line} | ${src?.split('/').pop()}</div>`
     );
     return false;
 };
 
-// ── APP.JS — main animation loop + boot ──
 const App = {
     canvas: null,
     ctx:    null,
@@ -23,7 +22,7 @@ const App = {
     },
 
     resize() {
-        const area = this.canvas.parentElement;
+        const area         = this.canvas.parentElement;
         this.canvas.width  = area.clientWidth;
         this.canvas.height = area.clientHeight;
         if (!State.isRunning) this.drawIdle();
@@ -33,8 +32,8 @@ const App = {
         const w = this.canvas.width, h = this.canvas.height;
         if (w < 10 || h < 10) return;
         Grid.draw(this.ctx, w, h);
-        this.ctx.fillStyle = '#002200';
-        this.ctx.font      = "12px 'Share Tech Mono'";
+        this.ctx.fillStyle = (State.scopeTextColor || '#00ff41') + '44';
+        this.ctx.font      = "13px 'Share Tech Mono'";
         this.ctx.fillText('AWAITING SIGNAL...', 10, 20);
     },
 
@@ -43,19 +42,22 @@ const App = {
             State.animId = requestAnimationFrame(tick);
             if (State.paused || !State.analyser) return;
 
-            // pull fresh data
+            // pull fresh audio data every frame
             State.analyser.getByteTimeDomainData(State.dataArray);
             State.analyser.getByteFrequencyData(State.freqArray);
 
-            // run analysis
             Measurements.update();
             SignalDetect.updateBadge(SignalDetect.run(State.dataArray));
 
-            // render active tab
             const w = this.canvas.width, h = this.canvas.height;
-            if      (State.currentTab === 'osc')  Oscilloscope.draw(this.ctx, w, h);
-            else if (State.currentTab === 'fft')  FFT.draw(this.ctx, w, h);
-            else                                  InfoView.draw(this.ctx, w, h);
+
+            // ── LAYER 1: Oscilloscope ALWAYS renders ──
+            Oscilloscope.draw(this.ctx, w, h);
+
+            // ── LAYER 2: Overlay FFT or INFO on top ──
+            if      (State.currentTab === 'fft')  FFT.drawOverlay(this.ctx, w, h);
+            else if (State.currentTab === 'info') InfoView.drawOverlay(this.ctx, w, h);
+            // OSC tab = no overlay, pure waveform view
         };
         tick();
     },
@@ -68,5 +70,4 @@ const App = {
     }
 };
 
-// ── BOOT ──
 App.init();
