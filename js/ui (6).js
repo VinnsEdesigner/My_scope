@@ -146,7 +146,17 @@ const UI = {
         if (sideMenu) sideMenu.style.fontFamily = FONT_MAP[font] || FONT_MAP.retro;
         this._font('settings-font', font);
     },
-  setSettingsFontSize(v) {      State.settingsFontSize = parseInt(v);       const sideMenu = document.getElementById('sideMenu')       if (sideMenu) {          // Scale the base font size for the entire menu          sideMenu.style.fontSize = (State.settingsFontSize / 100) + 'rem        }      const el = document.getElementById('settingsSizeVal');
+
+    setSettingsFontSize(v) {
+        State.settingsFontSize = parseInt(v);
+        const sideMenu = document.getElementById('sideMenu');
+        if (sideMenu) {
+            // FIXED: Use px instead of rem, scale from 15px base
+            sideMenu.style.fontSize = (15 * State.settingsFontSize / 100) + 'px';
+        }
+        const el = document.getElementById('settingsSizeVal');
+        if (el) el.innerText = v + '%';
+    },
 
     // ══ SCOPE SECTION ══
     setScopeTextColor(color) {
@@ -165,8 +175,8 @@ const UI = {
 
     setScopeFontSize(v) {
         State.scopeFontSize = parseInt(v);
-        // Apply to body which affects header, tabs, measurements, controls, canvas overlays
-        document.body.style.fontSize = (State.scopeFontSize / 100) + 'rem';
+        // FIXED: Use px instead of rem, scale from 15px base
+        document.body.style.fontSize = (15 * State.scopeFontSize / 100) + 'px';
         const el = document.getElementById('scopeSizeVal');
         if (el) el.innerText = v + '%';
     },
