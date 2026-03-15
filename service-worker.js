@@ -1,4 +1,4 @@
-const CACHE_VERSION = "lab-scope-v1.0.1";
+const CACHE_VERSION = "lab-scope-v1.0.3";
 
 const ASSETS = [
     "./", "./index.html", "./manifest.json",
@@ -49,7 +49,7 @@ self.addEventListener("fetch", event => {
                     if (cached) return cached;
                     return new Response(
                         `<html><body style="background:#000;color:#00ff41;font-family:monospace;padding:20px;text-align:center">
-                            <h2>LAB SCOPE v1.0.1</h2>
+                            <h2>LAB SCOPE v1.0.3</h2>
                             <p>Offline — reload once connected to cache the app.</p>
                             <button onclick="location.reload()" style="margin-top:20px;padding:12px 24px;background:#00ff41;color:#000;border:none;font-family:monospace;cursor:pointer">RETRY</button>
                         </body></html>`,
