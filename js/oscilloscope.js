@@ -1,4 +1,4 @@
-// ── OSCILLOSCOPE.JS v1.0.2 ──
+// ── OSCILLOSCOPE.JS v1.0.3 ──
 const Oscilloscope = {
     draw(ctx, w, h) {
         if (w < 10 || h < 10) return;
