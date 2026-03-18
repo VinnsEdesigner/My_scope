@@ -1,19 +1,18 @@
-// ── FFT.JS v1.0.3 — overlay renderers ──
+// ── FFT.JS v1.1.1 ──
 
 const FFT = {
 
-    // ── FFT OVERLAY: bottom 52% of canvas ──
     drawOverlay(ctx, w, h) {
         if (w < 10 || h < 10 || !State.freqArray) return;
 
-        const splitY  = Math.round(h * 0.48); // where overlay starts
-        const sc      = State.scopeTextColor || '#00ff41';
+        const splitY = Math.round(h * 0.48);
+        const sc     = State.scopeTextColor || '#00e5ff';
 
-        // ── backdrop panel ──
+        // backdrop
         ctx.fillStyle = 'rgba(0,0,0,0.88)';
         ctx.fillRect(0, splitY, w, h - splitY);
 
-        // ── top border ──
+        // top border
         ctx.strokeStyle = sc + '55';
         ctx.lineWidth   = 1;
         ctx.beginPath();
@@ -21,34 +20,31 @@ const FFT = {
         ctx.lineTo(w, splitY);
         ctx.stroke();
 
-        // ── FFT bars in the overlay area ──
+        // FFT bars
         const barCount = 120;
         const step     = Math.floor(State.freqArray.length / barCount);
         const barW     = w / barCount;
-        const barArea  = h - splitY - 18; // leave room for freq labels
+        const barArea  = h - splitY - 18;
 
         for (let i = 0; i < barCount; i++) {
             let sum = 0;
             for (let j = 0; j < step; j++) sum += State.freqArray[i * step + j];
-            const avg   = sum / step;
-            const barH  = (avg / 255) * barArea;
-            const hue   = 120 - (avg / 255) * 100;
+            const avg  = sum / step;
+            const barH = (avg / 255) * barArea;
+            const hue  = 120 - (avg / 255) * 100;
             ctx.fillStyle   = `hsl(${hue},100%,50%)`;
             ctx.shadowBlur  = 3;
             ctx.shadowColor = `hsl(${hue},100%,60%)`;
-            ctx.fillRect(
-                i * barW,
-                h - 18 - barH,   // sit above label row
-                Math.max(1, barW - 1),
-                barH
-            );
+            ctx.fillRect(i * barW, h - 18 - barH, Math.max(1, barW - 1), barH);
         }
         ctx.shadowBlur = 0;
 
-        // ── freq axis labels ──
+        // freq axis labels
         ctx.fillStyle = sc + '99';
         ctx.font      = "9px 'Share Tech Mono'";
-        const nyquist = State.audioCtx ? State.audioCtx.sampleRate / 2 : 22050;
+        const nyquist = State.simMode
+            ? State.simSampleRate / 2
+            : (State.audioCtx ? State.audioCtx.sampleRate / 2 : 22050);
         for (let k = 0; k <= 4; k++) {
             const freq  = (nyquist / 4) * k;
             const x     = (freq / nyquist) * w;
@@ -56,47 +52,44 @@ const FFT = {
             ctx.fillText(label, x + 2, h - 4);
         }
 
-        // ── panel title ──
+        // panel title
         ctx.fillStyle = sc + 'cc';
         ctx.font      = "bold 10px 'Share Tech Mono'";
         ctx.fillText('▼ FFT SPECTRUM', 8, splitY + 13);
 
-        // ── dominant freq callout ──
+        // dominant freq callout
         const mFreqEl = document.getElementById('mFreq');
         if (mFreqEl && mFreqEl.innerText !== '---') {
             const label = 'PEAK: ' + mFreqEl.innerText;
             const lw    = ctx.measureText(label).width;
             ctx.fillStyle = 'rgba(0,0,0,0.7)';
             ctx.fillRect(w - lw - 14, splitY + 3, lw + 10, 16);
-            ctx.fillStyle = (State.measColor || '#00e5ff') + 'ee';
+            ctx.fillStyle = (State.measColor || '#ffb300') + 'ee';
             ctx.fillText(label, w - lw - 9, splitY + 14);
         }
     }
 };
 
-// ── INFO VIEW OVERLAY: full canvas backdrop ──
+// ── INFO VIEW OVERLAY ──
 const InfoView = {
-
     drawOverlay(ctx, w, h) {
         if (w < 10 || h < 10) return;
 
-        const ic   = State.infoTextColor  || '#00e5ff';
+        const ic   = State.infoTextColor  || '#ffb300';
         const font = FONT_MAP[State.infoFont] || FONT_MAP.mono;
-        // FIXED: Properly apply font size scaling
-        const baseSz = 11;
-        const sz = Math.round(baseSz * (State.infoFontSize || 100) / 100);
-        const sc   = State.scopeTextColor || '#00ff41';
 
-        // ── full-canvas glass backdrop ──
+        // ── BUG4 FIX: sz correctly applied to font string ──
+        const baseSz = 11;
+        const sz     = Math.round(baseSz * (State.infoFontSize || 100) / 100);
+
+        // full-canvas glass backdrop
         ctx.fillStyle = 'rgba(0,0,0,0.84)';
         ctx.fillRect(0, 0, w, h);
 
-        // subtle border
         ctx.strokeStyle = ic + '33';
         ctx.lineWidth   = 1;
         ctx.strokeRect(4, 4, w - 8, h - 8);
 
-        // ── two-column layout ──
         const colL  = 12;
         const colR  = Math.round(w * 0.46);
         const lineH = sz + 11;
@@ -108,8 +101,12 @@ const InfoView = {
         };
         const typeColor = typeColors[State.lastSignalType] || ic;
 
+        const sr = State.simMode
+            ? State.simSampleRate
+            : (State.audioCtx ? State.audioCtx.sampleRate : 0);
+
         const lines = [
-            { label: 'SIGNAL',      val: State.lastSignalType,                              color: typeColor },
+            { label: 'SIGNAL',      val: State.lastSignalType,                        color: typeColor },
             { label: 'FREQUENCY',   val: document.getElementById('mFreq').innerText },
             { label: 'Vpp',         val: document.getElementById('mVpp').innerText },
             { label: 'RMS',         val: document.getElementById('mRms').innerText },
@@ -121,41 +118,66 @@ const InfoView = {
                 : 'FREE RUN' },
             { label: 'CALIB F',     val: State.calibFreq.toFixed(3) + 'x' },
             { label: 'CALIB V',     val: State.calibVpp.toFixed(3)  + 'x' },
-            { label: 'SAMPLE RATE', val: State.audioCtx ? State.audioCtx.sampleRate / 1000 + 'kHz' : '---' },
+            { label: 'SAMPLE RATE', val: sr ? sr / 1000 + 'kHz' : '---' },
             { label: 'FFT SIZE',    val: State.fftSize.toString() },
-            { label: 'STATUS',      val: State.isRunning ? (State.paused ? 'PAUSED' : 'LIVE') : 'IDLE',
-              color: State.paused ? '#ffb300' : (State.isRunning ? '#00ff41' : '#444') },
+            { label: 'MODE',        val: State.simMode ? 'SIMULATOR' : 'LIVE MIC',
+              color: State.simMode ? '#e040fb' : '#00ff41' },
+            { label: 'STATUS',      val: State.isRunning ? (State.paused ? 'PAUSED' : 'LIVE') : (State.simMode ? 'SIM' : 'IDLE'),
+              color: State.paused ? '#ffb300' : (State.isRunning || State.simMode ? '#00ff41' : '#444') },
         ];
 
+        // ── BUG4 FIX: use sz variable in font string ──
         ctx.font = `${sz}px ${font}`;
 
         lines.forEach((line, i) => {
             const y = startY + i * lineH;
             if (y > h - 10) return;
-
-            // label
             ctx.fillStyle = ic + '55';
             ctx.fillText(line.label, colL, y);
-
-            // separator dot
             ctx.fillStyle = ic + '33';
             ctx.fillText(':', colR - 10, y);
-
-            // value
             ctx.fillStyle = line.color || ic;
             ctx.fillText(line.val, colR, y);
         });
 
-        // ── panel header ──
         ctx.font      = "bold 10px 'Share Tech Mono'";
         ctx.fillStyle = ic + 'aa';
         ctx.fillText('▼ SIGNAL DIAGNOSTICS', 8, 16);
 
-        // ── live indicator top right ──
-        if (State.isRunning && !State.paused) {
+        if ((State.isRunning || State.simMode) && !State.paused) {
             ctx.fillStyle = '#00ff41cc';
             ctx.font      = "9px 'Share Tech Mono'";
-            ctx.fillText('● LIVE', w - 42, 16);
+            ctx.fillText(State.simMode ? '● SIM' : '● LIVE', w - 42, 16);
+        }
+    }
+};
+
+// ── SIM VIEW OVERLAY — shown on SIM tab ──
+const SimView = {
+    drawOverlay(ctx, w, h) {
+        if (w < 10 || h < 10) return;
+        const sc = State.scopeTextColor || '#00e5ff';
+
+        // top-left: sim mode label
+        ctx.fillStyle = '#e040fb88';
+        ctx.font      = "10px 'Share Tech Mono'";
+        ctx.fillText(`CH1 | SIM · ${State.sim.waveType.toUpperCase()}`, 8, 16);
+
+        // top-right: sample rate
+        ctx.fillStyle = sc + '66';
+        const srLabel = `${(State.simSampleRate / 1000).toFixed(1)}kHz · SIM`;
+        const srW     = ctx.measureText(srLabel).width;
+        ctx.fillText(srLabel, w - srW - 8, 16);
+
+        // bottom-right: freq
+        if (State.sim.frequency) {
+            const fLabel = State.sim.frequency >= 1000
+                ? (State.sim.frequency / 1000).toFixed(2) + 'kHz'
+                : State.sim.frequency + 'Hz';
+            ctx.fillStyle = (State.measColor || '#ffb300') + 'cc';
+            ctx.font      = "bold 10px 'Share Tech Mono'";
+            const fW = ctx.measureText(fLabel).width;
+            ctx.fillText(fLabel, w - fW - 8, h - 8);
         }
     }
 };

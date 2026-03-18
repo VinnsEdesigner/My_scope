@@ -1,4 +1,4 @@
-/* ── TABS.CSS ── */
+/* ── TABS.CSS v1.1.1 ── */
 #tabs {
     display:       flex;
     background:    var(--panel);
@@ -10,17 +10,19 @@
     flex:           1;
     padding:        7px 4px;
     text-align:     center;
-    font-size:      0.65em;  /* CHANGED: rem → em */
-    letter-spacing: 2px;
+    font-size:      0.65em;
+    letter-spacing: 1.5px;
     color:          var(--text-dim);
     cursor:         pointer;
     border-bottom:  2px solid transparent;
     transition:     all 0.2s;
     user-select:    none;
+    font-family:    var(--font-ui);
 }
+/* purple active tab */
 .tab.active {
-    color:             var(--neon);
-    border-bottom-color: var(--neon);
-    text-shadow:       0 0 8px var(--neon-glow);
+    color:               var(--purple);
+    border-bottom-color: var(--purple);
+    background:          rgba(224,64,251,0.05);
 }
-.tab:active { background: var(--neon-glow); }
+.tab:active { background: rgba(224,64,251,0.08); }

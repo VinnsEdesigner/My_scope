@@ -1,4 +1,4 @@
-// ── OSCILLOSCOPE.JS v1.0.3 ──
+// ── OSCILLOSCOPE.JS v1.1.1 ──
 const Oscilloscope = {
     draw(ctx, w, h) {
         if (w < 10 || h < 10) return;
@@ -18,7 +18,7 @@ const Oscilloscope = {
         if (!fired && State.triggerMode === 'normal') {
             ctx.fillStyle = 'rgba(255,179,0,0.6)';
             ctx.font      = "13px 'Share Tech Mono'";
-            ctx.fillText('WAITING FOR TRIGGER...', w/2 - 100, h/2);
+            ctx.fillText('WAITING FOR TRIGGER...', w / 2 - 100, h / 2);
             return;
         }
 
@@ -36,7 +36,7 @@ const Oscilloscope = {
             if (idx >= data.length) break;
             const raw = data[idx];
             const v   = ((raw / 128.0) - 1.0) * State.gain;
-            const y   = h/2 - (v * h / Grid.ROWS);
+            const y   = h / 2 - (v * h / Grid.ROWS);
             if (i === 0) ctx.moveTo(x, Math.max(1, Math.min(h - 1, y)));
             else         ctx.lineTo(x, Math.max(1, Math.min(h - 1, y)));
             x += sliceW;
@@ -45,11 +45,12 @@ const Oscilloscope = {
         ctx.shadowBlur = 0;
         ctx.restore();
 
-        ctx.fillStyle = '#004400';
+        // ── BUG3 FIX: use State.scopeTextColor not hardcoded '#004400' ──
+        ctx.fillStyle = (State.scopeTextColor || '#00e5ff') + '66';
         ctx.font      = "10px 'Share Tech Mono'";
         const modeStr = State.triggerEnabled
             ? `CH1 | TRIG:${State.triggerMode.toUpperCase()} ${
-                State.triggerEdge === 'rising' ? '↑' :
+                State.triggerEdge === 'rising'  ? '↑' :
                 State.triggerEdge === 'falling' ? '↓' : '↕'}`
             : 'CH1 | FREE RUN';
         ctx.fillText(modeStr, 8, 16);

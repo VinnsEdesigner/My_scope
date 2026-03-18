@@ -1,4 +1,4 @@
-// ── STATE.JS v1.0.5 — YOUR CUSTOM THEME AS DEFAULT ──
+// ── STATE.JS v1.1.1 ──
 const State = {
     // ── AUDIO ──
     audioCtx:   null,
@@ -32,30 +32,41 @@ const State = {
     calibFreq:      1.0,
     calibVpp:       1.0,
 
-    // ── BACKGROUND THEME ──
-    theme: 'dark',
-
-    // ── CANVAS COLORS (YOUR EXACT THEME) ──
-    waveColor: '#00ff41',   // Green waveform
-    gridColor: '#336666',   // Teal grid
+    // ── CANVAS COLORS ──
+    waveColor: '#ff1744',   // RED default waveform
+    gridColor: '#001a1a',   // dark teal grid
 
     // ── MEASUREMENTS BAR COLOR ──
-    measColor: '#ffffff',   // White
+    measColor: '#ffb300',   // amber — fixed default
 
     // ── SETTINGS PANEL SECTION ──
-    settingsTextColor: '#ffb300',  // Orange
-    settingsFont:      'retro',    // Orbitron
-    settingsFontSize:  120,        // 120% bigger
+    settingsTextColor: '#00e5ff',
+    settingsFont:      'retro',
+    settingsFontSize:  120,
 
     // ── SCOPE / MAIN AREA SECTION ──
-    scopeTextColor: '#00e5ff',     // CYAN (changed from white!)
-    scopeFont:      'retro',       // Orbitron
-    scopeFontSize:  120,           // 120% bigger
+    scopeTextColor: '#00e5ff',
+    scopeFont:      'retro',
+    scopeFontSize:  120,
 
-    // ── SIGNAL INFO TAB SECTION ──
-    infoTextColor: '#ffb300',      // Orange
-    infoFont:      'retro',        // Orbitron
-    infoFontSize:  120,            // 120% bigger
+    // ── SIGNAL INFO SECTION ──
+    infoTextColor: '#ffb300',
+    infoFont:      'retro',
+    infoFontSize:  120,
+
+    // ── SIM MODE ──
+    simMode:       false,
+    simSampleRate: 44100,
+    sim: {
+        source:    'synth',     // 'synth' | 'file'
+        waveType:  'sine',      // sine|square|triangle|sawtooth|ramp|pwm|noise|dc
+        frequency: 1000,
+        amplitude: 0.8,
+        phase:     0,
+        dutyCycle: 0.5,
+        playing:   false,
+        phase_acc: 0,           // internal phase accumulator
+    },
 
     // ── ANIMATION ──
     animId: null,
@@ -75,34 +86,9 @@ const FONT_MAP = {
 
 // ── SEMANTIC VERSION ──
 const APP_VERSION = {
-    major: 1, minor: 0, patch: 5,
+    major: 1, minor: 1, patch: 1,
     toString() { return `v${this.major}.${this.minor}.${this.patch}`; },
 };
 
-// ══════════════════════════════════════
-// ⚡ CRITICAL: APPLY THEME ON PAGE LOAD
-// ══════════════════════════════════════
-function initializeTheme() {
-    // Apply all custom colors from State to CSS/DOM
-    if (typeof UI !== 'undefined') {
-        UI.setWaveColor(State.waveColor);
-        UI.setGridColor(State.gridColor);
-        UI.setMeasColor(State.measColor);
-        UI.setSettingsTextColor(State.settingsTextColor);
-        UI.setSettingsFont(State.settingsFont);
-        UI.setSettingsFontSize(State.settingsFontSize);
-        UI.setScopeTextColor(State.scopeTextColor);
-        UI.setScopeFont(State.scopeFont);
-        UI.setScopeFontSize(State.scopeFontSize);
-        UI.setInfoTextColor(State.infoTextColor);
-        UI.setInfoFont(State.infoFont);
-        UI.setInfoFontSize(State.infoFontSize);
-    }
-}
-
-// Run initialization when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeTheme);
-} else {
-    initializeTheme();
-}
+// ── NOTE: initializeTheme() is called from app.js after ALL scripts load ──
+// This prevents BUG1 where UI was called before it existed

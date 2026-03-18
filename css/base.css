@@ -1,101 +1,88 @@
-/* ── BASE.CSS v1.0.3 ── */
+/* ── BASE.CSS v1.1.1 ── */
 
-/* ── DARK THEME ── */
-:root, [data-theme="dark"] {
-    --neon:          #00ff41;
-    --neon-dim:      #00aa2a;
-    --neon-glow:     rgba(0,255,65,0.4);
-    --amber:         #ffb300;
-    --cyan:          #00e5ff;
-    --red:           #ff1744;
-    --purple:        #e040fb;
-    --orange:        #ff6d00;
-    --bg:            #020c02;
-    --panel:         #030f03;
-    --panel2:        #051205;
-    --border:        rgba(0,255,65,0.2);
-    --border-bright: rgba(0,255,65,0.5);
-    --grid:          #001a00;
-    --text-dim:      #006600;
-    --text-mid:      #009900;
-    --text-main:     #00ff41;
-    --input-bg:      #011201;
-    --input-border:  rgba(0,255,65,0.4);
-    --card-bg:       #030f03;
-    /* canvas colors stay green on dark */
-    --canvas-wave:   #00ff41;
-    --canvas-grid:   #001800;
-    --canvas-text:   #004400;
-    --canvas-bright: #00bb44;
-}
-
-/* ── LIGHT THEME — forces black text everywhere ── */
-[data-theme="light"] {
-    --neon:          #004400;
-    --neon-dim:      #003300;
-    --neon-glow:     rgba(0,68,0,0.3);
-    --amber:         #e65100;
-    --cyan:          #0277bd;
-    --red:           #c62828;
-    --purple:        #6a1b9a;
-    --orange:        #bf360c;
-    --bg:            #eef2ee;
-    --panel:         #dde8dd;
-    --panel2:        #cfdecf;
-    --border:        rgba(0,80,0,0.25);
-    --border-bright: rgba(0,80,0,0.5);
-    --grid:          #c5d8c5;
-    --text-dim:      #3a5c3a;
-    --text-mid:      #1a3c1a;
-    --text-main:     #000000;
-    --input-bg:      #ffffff;
-    --input-border:  rgba(0,80,0,0.4);
-    --card-bg:       #e4ede4;
-    /* canvas colors on light */
-    --canvas-wave:   #006600;
-    --canvas-grid:   #c0d8c0;
-    --canvas-text:   #004400;
-    --canvas-bright: #005500;
-}
-
-/* ── THREE SECTION FONT VARIABLES ── */
+/* ── SINGLE DARK THEME ONLY — light mode removed ── */
 :root {
-    /* Settings panel fonts */
+    /* ── BRAND COLORS (fixed, never change) ── */
+    --brand-lab:    #ffb300;   /* amber  — LAB  in header */
+    --brand-scope:  #00e5ff;   /* cyan   — SCOPE in header */
+    --brand-pro-bg: rgba(0,229,255,0.15);
+    --brand-pro-br: rgba(0,229,255,0.5);
+
+    /* ── UI ACCENT COLORS ── */
+    --cyan:         #00e5ff;   /* primary UI text */
+    --amber:        #ffb300;   /* measurements + warnings */
+    --purple:       #e040fb;   /* active/selected state */
+    --purple-solid: #534AB7;   /* solid purple button */
+    --red:          #ff1744;   /* danger + default waveform */
+    --orange:       #ff6d00;   /* alert level */
+    --green:        #00ff41;   /* live indicator dot only */
+
+    /* ── BACKGROUNDS ── */
+    --bg:           #020c02;
+    --panel:        #030f03;
+    --panel2:       #051205;
+    --card-bg:      #030f03;
+    --input-bg:     #011201;
+
+    /* ── BORDERS ── */
+    --border:        rgba(0,229,255,0.15);
+    --border-bright: rgba(0,229,255,0.35);
+    --input-border:  rgba(0,229,255,0.3);
+
+    /* ── GRID ── */
+    --grid:         #001a1a;
+
+    /* ── TEXT ── */
+    --text-dim:     rgba(0,229,255,0.3);
+    --text-mid:     rgba(0,229,255,0.6);
+    --text-main:    #00e5ff;
+
+    /* ── CANVAS COLORS ── */
+    --canvas-wave:  #ff1744;   /* default red waveform */
+    --canvas-grid:  #001a1a;
+    --canvas-text:  rgba(0,229,255,0.4);
+
+    /* ── NEON aliases (used by legacy components) ── */
+    --neon:         #00e5ff;
+    --neon-dim:     rgba(0,229,255,0.4);
+    --neon-glow:    rgba(0,229,255,0.25);
+}
+
+/* ── FONT VARIABLES ── */
+:root {
     --font-settings-display: 'Orbitron', monospace;
     --font-settings-body:    'Share Tech Mono', monospace;
-    /* Scope / main UI fonts */
-    --font-scope-display: 'Orbitron', monospace;
-    --font-scope-body:    'Share Tech Mono', monospace;
-    /* Signal info / data fonts */
-    --font-info-display: 'Share Tech Mono', monospace;
-    --font-info-body:    'Share Tech Mono', monospace;
-
-    /* Generic aliases used by components */
+    --font-scope-display:    'Orbitron', monospace;
+    --font-scope-body:       'Share Tech Mono', monospace;
+    --font-info-display:     'Share Tech Mono', monospace;
+    --font-info-body:        'Share Tech Mono', monospace;
     --font-display: var(--font-scope-display);
     --font-ui:      var(--font-scope-body);
     --font-scope:   var(--font-scope-body);
     --font-data:    var(--font-info-body);
-
-    /* Font size variables - set by UI sliders */
-    --settings-fs: 15px;  /* Settings panel text size */
-    --scope-fs:    15px;  /* Scope/main UI text size */
-    --info-fs:     15px;  /* Info overlay text size */
+    --settings-fs:  15px;
+    --scope-fs:     15px;
+    --info-fs:      15px;
 }
 
 /* ── RESET + BODY ── */
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+*, *::before, *::after {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    margin: 0;
+    padding: 0;
+}
 html, body { height: 100%; overflow: hidden; }
 
 body {
     background:     var(--bg);
     color:          var(--text-main);
     font-family:    var(--font-ui);
-    font-size:      var(--scope-fs);  /* Main body uses scope font size */
+    font-size:      var(--scope-fs);
     position:       fixed;
     width:          100%;
     top: 0; left: 0;
     display:        flex;
     flex-direction: column;
     overflow:       hidden;
-    transition:     background 0.3s, color 0.3s;
 }
