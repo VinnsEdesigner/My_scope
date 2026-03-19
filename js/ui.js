@@ -25,6 +25,11 @@ const UI = {
         if (simBtns)  simBtns.style.display  = simOnly ? ''  : 'none';
         if (mainBtns) mainBtns.style.display = simOnly ? 'none' : '';
 
+        // ✅ OSC/FFT/INFO modes: request mic permission
+        if (!simOnly && State.audioCtx && !State.isRunning) {
+            Audio.enableMic(); // Request mic only when entering OSC mode
+        }
+
         if (simOnly && !State.simMode) this._enterSimMode();
         if (!simOnly && State.simMode)  this._exitSimMode();
 
@@ -37,6 +42,21 @@ const UI = {
         });
         document.querySelectorAll('.mpanel').forEach(p => {
             p.classList.toggle('active', p.id === 'mpanel-' + tab);
+        });
+    },
+
+    // ✅ SIM SET MENU (separate from main menu)
+    toggleSimSetMenu() {
+        document.getElementById('simSetMenu').classList.toggle('open');
+        document.getElementById('simSetOverlay').classList.toggle('open');
+    },
+
+    switchSimSetTab(tab) {
+        document.querySelectorAll('#simSetTabs .mtab').forEach(t => {
+            t.classList.toggle('active', t.dataset.mtab === tab);
+        });
+        document.querySelectorAll('#simSetMenu .mpanel').forEach(p => {
+            p.classList.toggle('active', p.id === 'simpanel-' + tab);
         });
     },
 

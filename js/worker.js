@@ -16,12 +16,12 @@
 
 // ✅ FIXED: Absolute paths from root for GitHub Pages
 importScripts(
-    './js/dsp/simulator.js',
-    './js/dsp/artifacts.js',
-    './js/dsp/measurements.js',
-    './js/dsp/classifier.js',
-    './js/dsp/analyser.js',
-    './js/dsp/bode.js'
+    '/js/dsp/simulator.js',
+    '/js/dsp/artifacts.js',
+    '/js/dsp/measurements.js',
+    '/js/dsp/classifier.js',
+    '/js/dsp/analyser.js',
+    '/js/dsp/bode.js'
 );
 
 self.onmessage = function(e) {

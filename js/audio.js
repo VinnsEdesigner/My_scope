@@ -1,12 +1,12 @@
-// ── AUDIO.JS — AudioContext, mic setup, reset ──
+// ── AUDIO.JS v1.1.3 FIXED — Single unified mic permission ──
 const Audio = {
     async init() {
         try {
             document.getElementById('splash').style.display = 'none';
             document.getElementById('statusTxt').innerText  = 'CONNECTING...';
 
-            State.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const stream   = await navigator.mediaDevices.getUserMedia({
+            // ✅ Request mic permission ONCE - will be shared with App.initMicStream()
+            const stream = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     echoCancellation:  false,
                     noiseSuppression:  false,
@@ -15,6 +15,8 @@ const Audio = {
                 }
             });
 
+            // ✅ Create live mode audio context + analyser
+            State.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const source   = State.audioCtx.createMediaStreamSource(stream);
             State.analyser = State.audioCtx.createAnalyser();
             State.analyser.fftSize              = State.fftSize;
@@ -43,9 +45,12 @@ const Audio = {
             App.startLoop();
 
         } catch (err) {
+            console.error('Mic init failed:', err);
             document.getElementById('splash').style.display = 'flex';
             document.getElementById('statusTxt').innerText  = 'MIC DENIED';
-            alert('Microphone access required. Please allow and retry.');
+            
+            // ✅ More helpful error message
+            alert('🎤 Microphone access required.\n\nLab Scope needs mic permission for:\n• Live signal capture (OSC tabs)\n• Simulator CH2 capture (SIM tab)\n\nPlease allow and click START PROBE again.');
         }
     },
 

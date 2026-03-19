@@ -142,6 +142,7 @@ const App = {
         if (this._micStream) return; // Already initialized
 
         try {
+            // ✅ Request mic permission (or reuse already-granted permission)
             this._micStream = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     echoCancellation:  false,
@@ -161,10 +162,16 @@ const App = {
 
             this._micDataArray = new Uint8Array(this._micAnalyser.fftSize);
 
-            console.log('✓ Mic stream initialized (will be used when CH2 source = mic)');
+            console.log('✓ Mic stream initialized for CH2 capture');
         } catch (err) {
-            console.error('Mic init failed:', err);
-            alert('Microphone access needed for CH2 capture');
+            console.error('CH2 mic init failed:', err);
+            
+            // ✅ Don't block - show warning but continue
+            const banner = document.createElement('div');
+            banner.style.cssText = 'position:fixed;top:60px;left:0;right:0;background:#ff6d00;color:#fff;padding:8px;font-size:11px;z-index:9998;text-align:center;font-family:monospace';
+            banner.innerText = '⚠️ CH2 mic unavailable - grant permission or use FILE mode';
+            document.body.appendChild(banner);
+            setTimeout(() => banner.remove(), 5000);
         }
     },
 
