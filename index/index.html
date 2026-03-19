@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lab Scope PRO</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/tabs.css">
+    <link rel="stylesheet" href="css/measurements.css">
+    <link rel="stylesheet" href="css/canvas.css">
+    <link rel="stylesheet" href="css/controls.css">
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="stylesheet" href="css/splash.css">
+    <link rel="stylesheet" href="css/simulator.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     HEADER — fixed brand colors, never changes
+═══════════════════════════════════════ -->
+<div id="header">
+    <button id="hamburgerBtn" onclick="UI.toggleMenu()">☰</button>
+    <div class="logo">
+        <span class="logo-lab">LAB</span><span class="logo-scope">SCOPE</span><span class="logo-pro">PRO</span>
+    </div>
+    <div class="header-right">
+        <span id="sigTypeBadge" class="sig-badge">---</span>
+        <span id="statusTxt" class="status-label">STANDBY</span>
+        <div id="statusDot" class="status-dot"></div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MAIN TABS — 4 tabs, SIM is 4th
+═══════════════════════════════════════ -->
+<div id="tabs">
+    <div class="tab active" data-tab="osc"  onclick="UI.switchTab('osc')">OSC</div>
+    <div class="tab"        data-tab="fft"  onclick="UI.switchTab('fft')">OSC+FFT</div>
+    <div class="tab"        data-tab="info" onclick="UI.switchTab('info')">OSC+INFO</div>
+    <div class="tab"        data-tab="sim"  onclick="UI.switchTab('sim')">SIM</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MEASUREMENTS — amber values
+═══════════════════════════════════════ -->
+<div id="measurements">
+    <div class="meas"><span class="meas-label">FREQ</span><span class="meas-value" id="mFreq">---</span></div>
+    <div class="meas"><span class="meas-label">Vpp</span> <span class="meas-value" id="mVpp">---</span></div>
+    <div class="meas"><span class="meas-label">RMS</span> <span class="meas-value" id="mRms">---</span></div>
+    <div class="meas"><span class="meas-label">dBFS</span><span class="meas-value" id="mDb">---</span></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     CHANNEL PILLS — SIM tab only (hidden until SIM active)
+═══════════════════════════════════════ -->
+<div id="chPills">
+    <div class="ch-pill ch-pill-1" id="pill1" onclick="UI.toggleChannel(1)">
+        <div class="ch-dot"></div> CH1
+    </div>
+    <div class="ch-pill ch-pill-2" id="pill2" onclick="UI.toggleChannel(2)">
+        <div class="ch-dot"></div> CH2
+    </div>
+    <div class="ch-pill ch-pill-3" id="pill3" onclick="UI.toggleChannel(3)">
+        <div class="ch-dot"></div> CH3
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCOPE CANVAS
+═══════════════════════════════════════ -->
+<div id="scopeArea">
+    <canvas id="scopeCanvas"></canvas>
+    <div class="scope-overlay"       id="overlayLeft">CH1 | AC</div>
+    <div class="scope-overlay-right" id="overlayRight">SR: 44.1kHz</div>
+    <div id="trigMarkerTop" class="trig-marker trig-top">▶ T+</div>
+    <div id="trigMarkerBot" class="trig-marker trig-bot">▶ T-</div>
+    <div id="splash">
+        <div class="splash-logo">LAB<br>SCOPE</div>
+        <div class="splash-sub">MOBILE OSCILLOSCOPE · PRO</div>
+        <div class="splash-specs">
+            AUX / MIC INPUT · WEB AUDIO API<br>
+            FFT + INFO OVERLAY · TRIGGER SYSTEM<br>
+            SIMULATOR · OFFLINE CAPABLE · PWA
+        </div>
+        <button class="splash-btn" onclick="Audio.init()">▶ START PROBE</button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     OSC CONTROLS STRIP
+═══════════════════════════════════════ -->
+<div id="oscControls">
+    <div class="osc-ctrl-row">
+        <span class="osc-ctrl-label">ZOOM</span>
+        <input type="range" id="zoomSlider" min="1" max="8" step="0.5" value="1" oninput="UI.updateZoom(this.value)">
+        <span class="osc-ctrl-val" id="zoomVal">1.0x</span>
+    </div>
+    <div class="osc-ctrl-row">
+        <span class="osc-ctrl-label">GAIN</span>
+        <input type="range" id="gainSlider" min="1" max="10" step="0.5" value="3" oninput="UI.updateGain(this.value)">
+        <span class="osc-ctrl-val" id="gainVal">3.0x</span>
+    </div>
+    <div class="osc-div-row">
+        <div class="osc-div-group">
+            <span class="osc-div-label">T/DIV</span>
+            <button class="osc-div-btn" onclick="UI.adjustTimeDiv(-1)">◀</button>
+            <span class="osc-div-val" id="timeDivVal">AUTO</span>
+            <button class="osc-div-btn" onclick="UI.adjustTimeDiv(1)">▶</button>
+        </div>
+        <div class="osc-div-group">
+            <span class="osc-div-label">V/DIV</span>
+            <button class="osc-div-btn" onclick="UI.adjustVoltDiv(-1)">◀</button>
+            <span class="osc-div-val" id="voltDivVal">AUTO</span>
+            <button class="osc-div-btn" onclick="UI.adjustVoltDiv(1)">▶</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MIC CHEVRON BAR — SIM tab only
+═══════════════════════════════════════ -->
+<div id="micBar">
+    <div class="mic-bar-dot" id="micDot" style="background:#333"></div>
+    <span class="mic-bar-label" id="micBarLabel">CH2 MIC — tap to enable</span>
+    <button class="mic-toggle-btn off" id="micToggleBtn" onclick="UI.toggleMic()">∨ OFF</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     SIM CHEVRON COLLAPSIBLE PANEL — SIM tab only
+     Fixed 120px height when expanded, scrollable content inside
+═══════════════════════════════════════ -->
+<div id="simChevronWrap">
+    <!-- chevron toggle bar -->
+    <div class="sim-chevron-bar" onclick="UI.toggleSimChevron()">
+        <span id="simChevronIcon">∧</span>
+    </div>
+
+    <!-- scrollable content 120px max -->
+    <div class="sim-chevron-content" id="simChevronContent">
+
+        <!-- SOURCE TOGGLE -->
+        <div class="src-row">
+            <span class="src-btn active-synth" data-src="synth" onclick="UI.setSimSource('synth')">SYNTH</span>
+            <span class="src-btn"              data-src="file"  onclick="UI.setSimSource('file')">FILE/REC</span>
+        </div>
+
+        <!-- SYNTH PANEL -->
+        <div id="simSynthPanel" style="display:flex;flex-direction:column;gap:4px">
+            <!-- WAVE TYPE GRID -->
+            <div class="wave-grid">
+                <button class="wave-btn active" data-wave="sine"     onclick="UI.setSimWave('sine')">SINE</button>
+                <button class="wave-btn"        data-wave="square"   onclick="UI.setSimWave('square')">SQ</button>
+                <button class="wave-btn"        data-wave="triangle" onclick="UI.setSimWave('triangle')">TRI</button>
+                <button class="wave-btn"        data-wave="sawtooth" onclick="UI.setSimWave('sawtooth')">SAW</button>
+                <button class="wave-btn"        data-wave="ramp"     onclick="UI.setSimWave('ramp')">RAMP</button>
+                <button class="wave-btn"        data-wave="pwm"      onclick="UI.setSimWave('pwm')">PWM</button>
+                <button class="wave-btn"        data-wave="noise"    onclick="UI.setSimWave('noise')">NOISE</button>
+                <button class="wave-btn"        data-wave="dc"       onclick="UI.setSimWave('dc')">DC</button>
+            </div>
+            <!-- FREQ SLIDER -->
+            <div class="osc-ctrl-row">
+                <span class="osc-ctrl-label">FREQ</span>
+                <input type="range" min="20" max="20000" step="10" value="1000" oninput="UI.setSimFreq(this.value)">
+                <span class="osc-ctrl-val" id="simFreqVal">1000Hz</span>
+            </div>
+            <!-- AMP SLIDER -->
+            <div class="osc-ctrl-row">
+                <span class="osc-ctrl-label">AMP</span>
+                <input type="range" min="0.05" max="1.0" step="0.05" value="0.8" oninput="UI.setSimAmp(this.value)">
+                <span class="osc-ctrl-val" id="simAmpVal">0.80</span>
+            </div>
+            <!-- PHASE SLIDER -->
+            <div class="osc-ctrl-row">
+                <span class="osc-ctrl-label">PHASE</span>
+                <input type="range" min="0" max="360" step="5" value="0" oninput="UI.setSimPhase(this.value)">
+                <span class="osc-ctrl-val" id="simPhaseVal">0°</span>
+            </div>
+            <!-- DUTY CYCLE — visible for PWM/SQUARE only via JS -->
+            <div class="osc-ctrl-row" id="dutyRow" style="display:none">
+                <span class="osc-ctrl-label">DUTY</span>
+                <input type="range" min="5" max="95" step="5" value="50" oninput="UI.setSimDuty(this.value)">
+                <span class="osc-ctrl-val" id="simDutyVal">50%</span>
+            </div>
+        </div>
+
+        <!-- FILE/REC PANEL -->
+        <div id="simFilePanel" style="display:none;flex-direction:column;gap:4px">
+            <span class="sim-file-name empty" id="simFileName">no file loaded</span>
+            <input type="file" id="simFilePicker" accept="audio/*" onchange="UI.onSimFileSelected(this)">
+            <button class="file-btn" onclick="UI.loadSimFile()">📂 LOAD FILE</button>
+            <button class="rec-btn"  id="simRecBtn" onclick="UI.toggleSimRecord()">⏺ RECORD MIC</button>
+            <span class="sim-status" id="simRecStatus"></span>
+        </div>
+
+    </div>
+
+    <!-- collapsed strip (shown when chevron is closed) -->
+    <div class="sim-collapsed-strip" id="simCollapsedStrip" style="display:none" onclick="UI.toggleSimChevron()">
+        <div class="strip-line"></div>
+        <span>∨ expand controls</span>
+        <div class="strip-line"></div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     BOTTOM CONTROLS
+     mainBtns — OSC/FFT/INFO tabs
+     simBtns  — SIM tab (hidden by default)
+═══════════════════════════════════════ -->
+<div id="controls">
+    <!-- MAIN BUTTONS: PAUSE + TRIG + SNAP (no duplicate OSC+FFT) -->
+    <div id="mainBtns">
+        <div class="btn-row">
+            <button class="btn-primary"   id="pauseBtn"   onclick="UI.togglePause()" disabled>⏸ PAUSE</button>
+            <button class="btn-secondary" id="triggerBtn" onclick="Trigger.toggle()">⚡ TRIG</button>
+            <button class="btn-amber"                     onclick="UI.captureSnapshot()">📸 SNAP</button>
+        </div>
+        <div class="btn-row-2">
+            <button class="btn-danger" onclick="Audio.reset()">↺ RESET</button>
+            <button class="btn-secondary" onclick="UI.toggleMenu()">☰ MENU</button>
+        </div>
+    </div>
+
+    <!-- SIM BUTTONS: PAUSE + SIM SET + STOP -->
+    <div id="simBtns" style="display:none">
+        <div class="btn-row">
+            <button class="btn-primary"   id="simPlayBtn" onclick="UI.toggleSimPlay()">▶ PLAY</button>
+            <button class="btn-active"                    onclick="UI.switchMenuTab('sim'); UI.toggleMenu()">☰ SIM SET</button>
+            <button class="btn-danger"                    onclick="UI.stopSim()">⏹ STOP</button>
+        </div>
+        <div class="btn-row-2">
+            <button class="btn-amber"  onclick="UI.captureSnapshot()">📸 SNAP</button>
+            <button class="btn-danger" onclick="Audio.reset()">↺ RESET</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SIDE MENU OVERLAY
+═══════════════════════════════════════ -->
+<div id="menuOverlay" onclick="UI.toggleMenu()"></div>
+<div id="sideMenu">
+    <div class="menu-header">
+        <span class="menu-title">⚙ SETTINGS</span>
+        <button class="menu-close" onclick="UI.toggleMenu()">✕</button>
+    </div>
+
+    <div id="menuTabs">
+        <div class="mtab active" data-mtab="controls"  onclick="UI.switchMenuTab('controls')">CONTROLS</div>
+        <div class="mtab"        data-mtab="trigger"   onclick="UI.switchMenuTab('trigger')">TRIGGER</div>
+        <div class="mtab"        data-mtab="sim"       onclick="UI.switchMenuTab('sim')">SIM SET</div>
+        <div class="mtab"        data-mtab="calib"     onclick="UI.switchMenuTab('calib')">CALIBRATE</div>
+        <div class="mtab"        data-mtab="theme"     onclick="UI.switchMenuTab('theme')">THEME</div>
+        <div class="mtab"        data-mtab="manual"    onclick="UI.switchMenuTab('manual')">MANUAL</div>
+        <div class="mtab"        data-mtab="build"     onclick="UI.switchMenuTab('build')">BUILD</div>
+    </div>
+
+    <!-- ── CONTROLS PANEL ── -->
+    <div class="mpanel active" id="mpanel-controls">
+        <div class="mgroup">
+            <div class="mgroup-title">DISPLAY</div>
+            <div class="mrow">
+                <span class="mlabel">SMOOTH</span>
+                <input type="range" id="smoothSlider" min="0" max="0.95" step="0.05" value="0.6" oninput="UI.updateSmoothing(this.value)">
+                <span class="mval" id="smoothVal">0.60</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">FFT SIZE</span>
+                <div class="mrow-right">
+                    <button class="mbtn" onclick="UI.adjustFFTSize(-1)">◀</button>
+                    <span class="mval" id="fftSizeVal">4096</span>
+                    <button class="mbtn" onclick="UI.adjustFFTSize(1)">▶</button>
+                </div>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">TIMEBASE</div>
+            <div class="mrow">
+                <span class="mlabel">TIME/DIV</span>
+                <div class="mrow-right">
+                    <button class="mbtn" onclick="UI.adjustTimeDiv(-1)">◀</button>
+                    <span class="mval" id="timeDivValMenu">AUTO</span>
+                    <button class="mbtn" onclick="UI.adjustTimeDiv(1)">▶</button>
+                </div>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">AMPLITUDE</div>
+            <div class="mrow">
+                <span class="mlabel">VOLT/DIV</span>
+                <div class="mrow-right">
+                    <button class="mbtn" onclick="UI.adjustVoltDiv(-1)">◀</button>
+                    <span class="mval" id="voltDivValMenu">AUTO</span>
+                    <button class="mbtn" onclick="UI.adjustVoltDiv(1)">▶</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── TRIGGER PANEL ── -->
+    <div class="mpanel" id="mpanel-trigger">
+        <div class="mgroup">
+            <div class="mgroup-title">TRIGGER MODE</div>
+            <div class="mrow">
+                <span class="mlabel">MODE</span>
+                <div class="mrow-right">
+                    <button class="mbtn-sel active" id="tmode-auto"   onclick="Trigger.setMode('auto')">AUTO</button>
+                    <button class="mbtn-sel"        id="tmode-normal" onclick="Trigger.setMode('normal')">NORM</button>
+                    <button class="mbtn-sel"        id="tmode-single" onclick="Trigger.setMode('single')">SINGLE</button>
+                </div>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">EDGE</span>
+                <div class="mrow-right">
+                    <button class="mbtn-sel active" id="tedge-rising"  onclick="Trigger.setEdge('rising')">RISE ↑</button>
+                    <button class="mbtn-sel"        id="tedge-falling" onclick="Trigger.setEdge('falling')">FALL ↓</button>
+                    <button class="mbtn-sel"        id="tedge-both"    onclick="Trigger.setEdge('both')">BOTH</button>
+                </div>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">TRIGGER LEVEL</div>
+            <div class="mrow">
+                <span class="mlabel">UPPER</span>
+                <input type="range" id="trigUpperSlider" min="-100" max="100" step="1" value="30" oninput="Trigger.updateUpper(this.value)">
+                <span class="mval" id="trigUpperVal">+0.30V</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">LOWER</span>
+                <input type="range" id="trigLowerSlider" min="-100" max="100" step="1" value="-30" oninput="Trigger.updateLower(this.value)">
+                <span class="mval" id="trigLowerVal">-0.30V</span>
+            </div>
+            <div class="mrow" style="flex-direction:column;align-items:stretch;gap:8px">
+                <span class="mlabel">MANUAL LEVEL (V)</span>
+                <input type="number" id="trigManualInput" class="minput" placeholder="e.g. 0.25  range: -1.00 to +1.00" step="0.01" min="-1" max="1">
+                <button class="mbtn-full" onclick="Trigger.setManual()">✓ SET LEVEL</button>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">TRIGGER STATUS</div>
+            <div class="mrow">
+                <span class="mlabel">STATE</span>
+                <span class="mval" id="trigStatusVal" style="color:var(--amber)">ARMED</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">LAST FIRE</span>
+                <span class="mval" id="trigLastFire">---</span>
+            </div>
+            <div class="mrow-btn">
+                <button class="mbtn-full" onclick="Trigger.forceArm()">↺ RE-ARM TRIGGER</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── SIM SET PANEL — 5 sub-tabs scrollable ── -->
+    <div class="mpanel" id="mpanel-sim">
+        <!-- PARAMS -->
+        <div class="mgroup">
+            <div class="mgroup-title">PARAMS</div>
+            <div class="mrow">
+                <span class="mlabel">WAVE</span>
+                <div class="mrow-right" style="flex-wrap:wrap;gap:4px">
+                    <button class="mbtn-sel active" data-wave="sine"     onclick="UI.setSimWave('sine')">SINE</button>
+                    <button class="mbtn-sel"        data-wave="square"   onclick="UI.setSimWave('square')">SQ</button>
+                    <button class="mbtn-sel"        data-wave="triangle" onclick="UI.setSimWave('triangle')">TRI</button>
+                    <button class="mbtn-sel"        data-wave="sawtooth" onclick="UI.setSimWave('sawtooth')">SAW</button>
+                    <button class="mbtn-sel"        data-wave="ramp"     onclick="UI.setSimWave('ramp')">RAMP</button>
+                    <button class="mbtn-sel"        data-wave="pwm"      onclick="UI.setSimWave('pwm')">PWM</button>
+                    <button class="mbtn-sel"        data-wave="noise"    onclick="UI.setSimWave('noise')">NOISE</button>
+                    <button class="mbtn-sel"        data-wave="dc"       onclick="UI.setSimWave('dc')">DC</button>
+                </div>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">FREQ</span>
+                <input type="range" min="20" max="20000" step="10" value="1000" oninput="UI.setSimFreq(this.value)">
+                <span class="mval" id="simFreqValMenu">1000Hz</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">AMP</span>
+                <input type="range" min="0.05" max="1.0" step="0.05" value="0.8" oninput="UI.setSimAmp(this.value)">
+                <span class="mval" id="simAmpValMenu">0.80</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">PHASE</span>
+                <input type="range" min="0" max="360" step="5" value="0" oninput="UI.setSimPhase(this.value)">
+                <span class="mval" id="simPhaseValMenu">0°</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">DUTY</span>
+                <input type="range" min="5" max="95" step="5" value="50" oninput="UI.setSimDuty(this.value)">
+                <span class="mval" id="simDutyValMenu">50%</span>
+            </div>
+        </div>
+
+        <!-- SOURCE -->
+        <div class="mgroup">
+            <div class="mgroup-title">SOURCE</div>
+            <div class="mrow">
+                <span class="mlabel">INPUT</span>
+                <div class="mrow-right">
+                    <button class="mbtn-sel active" data-src="synth" onclick="UI.setSimSource('synth')">SYNTH</button>
+                    <button class="mbtn-sel"        data-src="file"  onclick="UI.setSimSource('file')">FILE/REC</button>
+                </div>
+            </div>
+            <div class="mrow" style="flex-direction:column;align-items:stretch;gap:8px">
+                <span class="mlabel">FILE</span>
+                <span class="sim-file-name empty" id="simFileNameMenu">no file loaded</span>
+                <button class="mbtn-full" onclick="UI.loadSimFile()">📂 LOAD AUDIO FILE</button>
+                <button class="mbtn-full btn-danger-full" id="simRecBtnMenu" onclick="UI.toggleSimRecord()">⏺ RECORD MIC</button>
+            </div>
+        </div>
+
+        <!-- CHANNELS -->
+        <div class="mgroup">
+            <div class="mgroup-title">CHANNELS</div>
+            <div class="mrow">
+                <span class="mlabel" style="color:#e040fb">● CH1</span>
+                <span class="mlabel" style="color:var(--text-mid)">Reference</span>
+                <div class="mrow-right">
+                    <button class="mbtn-sel active" id="ch1Toggle" onclick="UI.toggleChannel(1)">ON</button>
+                </div>
+            </div>
+            <div class="mrow">
+                <span class="mlabel" style="color:#ff1744">● CH2</span>
+                <span class="mlabel" style="color:var(--text-mid)">Mic raw</span>
+                <div class="mrow-right">
+                    <button class="mbtn-sel" id="ch2Toggle" onclick="UI.toggleChannel(2)">OFF</button>
+                </div>
+            </div>
+            <div class="mrow">
+                <span class="mlabel" style="color:#00e5ff">● CH3</span>
+                <span class="mlabel" style="color:var(--text-mid)">Corrected</span>
+                <div class="mrow-right">
+                    <button class="mbtn-sel" id="ch3Toggle" onclick="UI.toggleChannel(3)">OFF</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ARTIFACTS -->
+        <div class="mgroup">
+            <div class="mgroup-title">STAGE 1 · SOURCE</div>
+            <div class="mrow">
+                <span class="mlabel">DC OFFSET</span>
+                <input type="range" min="-100" max="100" step="1" value="0" oninput="Artifacts.params.dcOffset = this.value/100; document.getElementById('artDcVal').innerText = (this.value/100).toFixed(2)">
+                <span class="mval" id="artDcVal">0.00</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">HARM DIST</span>
+                <input type="range" min="0" max="100" step="1" value="0" oninput="Artifacts.params.harmDistort = this.value/100; document.getElementById('artHarmVal').innerText = this.value + '%'">
+                <span class="mval" id="artHarmVal">0%</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">SRC CLIP</span>
+                <input type="range" min="0" max="100" step="1" value="0" oninput="Artifacts.params.srcClip = this.value/100; document.getElementById('artSrcClipVal').innerText = this.value + '%'">
+                <span class="mval" id="artSrcClipVal">0%</span>
+            </div>
+        </div>
+        <div class="mgroup artifact-stage2">
+            <div class="mgroup-title">STAGE 2 · HARDWARE SIM</div>
+            <div class="mrow">
+                <span class="mlabel">AC COUPLE</span>
+                <input type="range" min="0" max="100" step="1" value="0" oninput="Artifacts.params.acCouple = this.value/100; document.getElementById('artAcVal').innerText = this.value + '%'">
+                <span class="mval" id="artAcVal">0%</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">MIC BIAS</span>
+                <input type="range" min="0" max="100" step="1" value="0" oninput="Artifacts.params.micBias = this.value/100; document.getElementById('artBiasVal').innerText = this.value + '%'">
+                <span class="mval" id="artBiasVal">0%</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">ASYM CLIP</span>
+                <input type="range" min="0" max="100" step="1" value="0" oninput="Artifacts.params.asymClip = this.value/100; document.getElementById('artAsymVal').innerText = this.value + '%'">
+                <span class="mval" id="artAsymVal">0%</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">AGC PUMP</span>
+                <input type="range" min="0" max="100" step="1" value="0" oninput="Artifacts.params.agcPumping = this.value/100; document.getElementById('artAgcVal').innerText = this.value + '%'">
+                <span class="mval" id="artAgcVal">0%</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">HPF CORNER</span>
+                <input type="range" min="0" max="100" step="1" value="0" oninput="Artifacts.params.hpfCorner = this.value/100; document.getElementById('artHpfVal').innerText = Math.round(this.value*3) + 'Hz'">
+                <span class="mval" id="artHpfVal">0Hz</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">ROLLOFF</span>
+                <input type="range" min="0" max="100" step="1" value="0" oninput="Artifacts.params.rolloff = this.value/100; document.getElementById('artRollVal').innerText = this.value + '%'">
+                <span class="mval" id="artRollVal">0%</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">NOISE FLR</span>
+                <input type="range" min="0" max="100" step="1" value="0" oninput="Artifacts.params.noiseFloor = this.value/100; document.getElementById('artNoiseVal').innerText = this.value + '%'">
+                <span class="mval" id="artNoiseVal">0%</span>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">QUANTIZE</span>
+                <input type="range" min="0" max="100" step="1" value="0" oninput="Artifacts.params.quantize = this.value/100; document.getElementById('artQuantVal').innerText = this.value + '%'">
+                <span class="mval" id="artQuantVal">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CALIBRATE PANEL ── -->
+    <div class="mpanel" id="mpanel-calib">
+        <div class="mgroup">
+            <div class="mgroup-title">FREQUENCY CALIBRATION</div>
+            <div class="mcalib-info">Connect a known reference signal to AUX. Enter its exact frequency then tap CALIBRATE.</div>
+            <div class="mrow" style="flex-direction:column;align-items:stretch;gap:8px">
+                <span class="mlabel">REFERENCE FREQUENCY (Hz)</span>
+                <input type="number" id="calibFreqInput" class="minput" placeholder="e.g. 1000 Hz" value="1000">
+                <button class="mbtn-full" onclick="Calibration.runFreq()">⚡ CALIBRATE FREQUENCY</button>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">CORRECTION</span>
+                <span class="mval" id="calibFreqResult">1.000x</span>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">AMPLITUDE CALIBRATION</div>
+            <div class="mcalib-info">Connect a known Vpp signal to AUX. Enter the exact Vpp value then tap CALIBRATE.</div>
+            <div class="mrow" style="flex-direction:column;align-items:stretch;gap:8px">
+                <span class="mlabel">REFERENCE Vpp (Volts)</span>
+                <input type="number" id="calibVppInput" class="minput" placeholder="e.g. 1.00 V" step="0.01" value="1.00">
+                <button class="mbtn-full" onclick="Calibration.runVpp()">⚡ CALIBRATE AMPLITUDE</button>
+            </div>
+            <div class="mrow">
+                <span class="mlabel">CORRECTION</span>
+                <span class="mval" id="calibVppResult">1.000x</span>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">RESET</div>
+            <div class="mrow-btn">
+                <button class="mbtn-full btn-danger-full" onclick="Calibration.reset()">↺ RESET TO DEFAULT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── THEME PANEL (light mode removed) ── -->
+    <div class="mpanel" id="mpanel-theme">
+        <div class="mgroup">
+            <div class="mgroup-title">WAVEFORM COLOR</div>
+            <div class="swatch-row">
+                <button class="swatch-btn active" data-group="wave" data-color="#ff1744" onclick="UI.setWaveColor('#ff1744')" style="background:#ff1744"></button>
+                <button class="swatch-btn" data-group="wave" data-color="#00ff41" onclick="UI.setWaveColor('#00ff41')" style="background:#00ff41"></button>
+                <button class="swatch-btn" data-group="wave" data-color="#00e5ff" onclick="UI.setWaveColor('#00e5ff')" style="background:#00e5ff"></button>
+                <button class="swatch-btn" data-group="wave" data-color="#ffb300" onclick="UI.setWaveColor('#ffb300')" style="background:#ffb300"></button>
+                <button class="swatch-btn" data-group="wave" data-color="#e040fb" onclick="UI.setWaveColor('#e040fb')" style="background:#e040fb"></button>
+                <button class="swatch-btn" data-group="wave" data-color="#ffffff" onclick="UI.setWaveColor('#ffffff')" style="background:#ffffff;border:1px solid #555"></button>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">GRID COLOR</div>
+            <div class="swatch-row">
+                <button class="swatch-btn active" data-group="grid" data-color="#001a1a" onclick="UI.setGridColor('#001a1a')" style="background:#001a1a;border:1px solid #003333"></button>
+                <button class="swatch-btn" data-group="grid" data-color="#001800" onclick="UI.setGridColor('#001800')" style="background:#001800;border:1px solid #005500"></button>
+                <button class="swatch-btn" data-group="grid" data-color="#001a2e" onclick="UI.setGridColor('#001a2e')" style="background:#001a2e;border:1px solid #004466"></button>
+                <button class="swatch-btn" data-group="grid" data-color="#1a0000" onclick="UI.setGridColor('#1a0000')" style="background:#1a0000;border:1px solid #550000"></button>
+                <button class="swatch-btn" data-group="grid" data-color="#1a001a" onclick="UI.setGridColor('#1a001a')" style="background:#1a001a;border:1px solid #440044"></button>
+                <button class="swatch-btn" data-group="grid" data-color="#111111" onclick="UI.setGridColor('#111111')" style="background:#111111;border:1px solid #444"></button>
+            </div>
+        </div>
+
+        <div class="section-header">⚙ SETTINGS PANEL</div>
+        <div class="mgroup">
+            <div class="mgroup-title">TEXT COLOR</div>
+            <div class="swatch-row">
+                <button class="swatch-btn active" data-group="settings-text" data-color="#00e5ff" onclick="UI.setSettingsTextColor('#00e5ff')" style="background:#00e5ff"></button>
+                <button class="swatch-btn" data-group="settings-text" data-color="#ffb300" onclick="UI.setSettingsTextColor('#ffb300')" style="background:#ffb300"></button>
+                <button class="swatch-btn" data-group="settings-text" data-color="#e040fb" onclick="UI.setSettingsTextColor('#e040fb')" style="background:#e040fb"></button>
+                <button class="swatch-btn" data-group="settings-text" data-color="#ff1744" onclick="UI.setSettingsTextColor('#ff1744')" style="background:#ff1744"></button>
+                <button class="swatch-btn" data-group="settings-text" data-color="#ffffff" onclick="UI.setSettingsTextColor('#ffffff')" style="background:#ffffff;border:1px solid #555"></button>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">FONT</div>
+            <div class="theme-grid">
+                <button class="font-pick-btn active" data-group="settings-font" data-font="retro"  onclick="UI.setSettingsFont('retro')"  style="font-family:'Orbitron',monospace">ORBITRON<br><small>Techy</small></button>
+                <button class="font-pick-btn"        data-group="settings-font" data-font="mono"   onclick="UI.setSettingsFont('mono')"   style="font-family:'Share Tech Mono',monospace">MONO<br><small>Terminal</small></button>
+                <button class="font-pick-btn"        data-group="settings-font" data-font="modern" onclick="UI.setSettingsFont('modern')" style="font-family:'Rajdhani',sans-serif">RAJDHANI<br><small>Modern</small></button>
+                <button class="font-pick-btn"        data-group="settings-font" data-font="pro"    onclick="UI.setSettingsFont('pro')"    style="font-family:'Bebas Neue',sans-serif">BEBAS NEUE<br><small>Pro</small></button>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">TEXT SIZE</div>
+            <div class="mrow">
+                <span class="mlabel">SIZE</span>
+                <input type="range" min="70" max="150" step="5" value="120" oninput="UI.setSettingsFontSize(this.value)">
+                <span class="mval" id="settingsSizeVal">120%</span>
+            </div>
+        </div>
+
+        <div class="section-header">📡 SCOPE / MAIN UI</div>
+        <div class="mgroup">
+            <div class="mgroup-title">TEXT COLOR</div>
+            <div class="swatch-row">
+                <button class="swatch-btn active" data-group="scope-text" data-color="#00e5ff" onclick="UI.setScopeTextColor('#00e5ff')" style="background:#00e5ff"></button>
+                <button class="swatch-btn" data-group="scope-text" data-color="#ffb300" onclick="UI.setScopeTextColor('#ffb300')" style="background:#ffb300"></button>
+                <button class="swatch-btn" data-group="scope-text" data-color="#e040fb" onclick="UI.setScopeTextColor('#e040fb')" style="background:#e040fb"></button>
+                <button class="swatch-btn" data-group="scope-text" data-color="#ff1744" onclick="UI.setScopeTextColor('#ff1744')" style="background:#ff1744"></button>
+                <button class="swatch-btn" data-group="scope-text" data-color="#ffffff" onclick="UI.setScopeTextColor('#ffffff')" style="background:#ffffff;border:1px solid #555"></button>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">FONT</div>
+            <div class="theme-grid">
+                <button class="font-pick-btn active" data-group="scope-font" data-font="retro"  onclick="UI.setScopeFont('retro')"  style="font-family:'Orbitron',monospace">ORBITRON<br><small>Techy</small></button>
+                <button class="font-pick-btn"        data-group="scope-font" data-font="mono"   onclick="UI.setScopeFont('mono')"   style="font-family:'Share Tech Mono',monospace">MONO<br><small>Terminal</small></button>
+                <button class="font-pick-btn"        data-group="scope-font" data-font="modern" onclick="UI.setScopeFont('modern')" style="font-family:'Rajdhani',sans-serif">RAJDHANI<br><small>Modern</small></button>
+                <button class="font-pick-btn"        data-group="scope-font" data-font="pro"    onclick="UI.setScopeFont('pro')"    style="font-family:'Bebas Neue',sans-serif">BEBAS NEUE<br><small>Pro</small></button>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">TEXT SIZE</div>
+            <div class="mrow">
+                <span class="mlabel">SIZE</span>
+                <input type="range" min="70" max="150" step="5" value="120" oninput="UI.setScopeFontSize(this.value)">
+                <span class="mval" id="scopeSizeVal">120%</span>
+            </div>
+        </div>
+
+        <div class="section-header">📊 SIGNAL INFO</div>
+        <div class="mgroup">
+            <div class="mgroup-title">TEXT COLOR</div>
+            <div class="swatch-row">
+                <button class="swatch-btn active" data-group="info-text" data-color="#ffb300" onclick="UI.setInfoTextColor('#ffb300')" style="background:#ffb300"></button>
+                <button class="swatch-btn" data-group="info-text" data-color="#00e5ff" onclick="UI.setInfoTextColor('#00e5ff')" style="background:#00e5ff"></button>
+                <button class="swatch-btn" data-group="info-text" data-color="#e040fb" onclick="UI.setInfoTextColor('#e040fb')" style="background:#e040fb"></button>
+                <button class="swatch-btn" data-group="info-text" data-color="#ff1744" onclick="UI.setInfoTextColor('#ff1744')" style="background:#ff1744"></button>
+                <button class="swatch-btn" data-group="info-text" data-color="#ffffff" onclick="UI.setInfoTextColor('#ffffff')" style="background:#ffffff;border:1px solid #555"></button>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">FONT</div>
+            <div class="theme-grid">
+                <button class="font-pick-btn active" data-group="info-font" data-font="retro"  onclick="UI.setInfoFont('retro')"  style="font-family:'Orbitron',monospace">ORBITRON<br><small>Techy</small></button>
+                <button class="font-pick-btn"        data-group="info-font" data-font="mono"   onclick="UI.setInfoFont('mono')"   style="font-family:'Share Tech Mono',monospace">MONO<br><small>Terminal</small></button>
+                <button class="font-pick-btn"        data-group="info-font" data-font="modern" onclick="UI.setInfoFont('modern')" style="font-family:'Rajdhani',sans-serif">RAJDHANI<br><small>Modern</small></button>
+                <button class="font-pick-btn"        data-group="info-font" data-font="pro"    onclick="UI.setInfoFont('pro')"    style="font-family:'Bebas Neue',sans-serif">BEBAS NEUE<br><small>Pro</small></button>
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">TEXT SIZE</div>
+            <div class="mrow">
+                <span class="mlabel">SIZE</span>
+                <input type="range" min="70" max="150" step="5" value="120" oninput="UI.setInfoFontSize(this.value)">
+                <span class="mval" id="infoSizeVal">120%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── MANUAL PANEL ── -->
+    <div class="mpanel" id="mpanel-manual">
+        <div class="mgroup">
+            <div class="mgroup-title">GETTING STARTED</div>
+            <div class="manual-text">
+                1. Tap <b>▶ START PROBE</b> on splash screen<br>
+                2. Grant microphone permission<br>
+                3. Scope begins capturing from mic or AUX jack<br>
+                4. OSC controls always visible at bottom<br>
+                5. Open <b>☰ menu</b> for trigger, calibration, theme<br>
+                6. Tap <b>SIM</b> tab to use signal simulator
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">VIEW MODES</div>
+            <div class="manual-text">
+                <b>OSC</b> — pure waveform<br>
+                <b>OSC+FFT</b> — waveform + frequency spectrum overlay<br>
+                <b>OSC+INFO</b> — waveform + diagnostics overlay<br>
+                <b>SIM</b> — signal simulator with 8 waveform types
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">SIMULATOR</div>
+            <div class="manual-text">
+                Select waveform type and adjust FREQ + AMP sliders.<br>
+                Tap <b>▶ PLAY</b> to start.<br>
+                Enable <b>CH2 MIC</b> to compare live mic vs simulator.<br>
+                Use <b>☰ SIM SET</b> to access artifacts, channels and source.
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">TRIGGER SYSTEM</div>
+            <div class="manual-text">
+                <b>AUTO</b> — always displays<br>
+                <b>NORMAL</b> — only updates on trigger event<br>
+                <b>SINGLE</b> — captures once then freezes<br><br>
+                <b>RISE ↑</b> — rising edge crossing upper threshold<br>
+                <b>FALL ↓</b> — falling edge crossing lower threshold
+            </div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">AUX JACK SAFETY</div>
+            <div class="manual-text">⚠️ NEVER connect mains voltage to AUX jack<br>⚠️ Max safe input: &lt;1Vpp only</div>
+        </div>
+    </div>
+
+    <!-- ── BUILD PANEL ── -->
+    <div class="mpanel" id="mpanel-build">
+        <div class="mgroup">
+            <div class="mgroup-title">APPLICATION</div>
+            <div class="build-row"><span>NAME</span><span>Lab Scope PRO</span></div>
+            <div class="build-row"><span>VERSION</span><span id="bVersion">v1.1.1</span></div>
+            <div class="build-row"><span>RELEASE</span><span>STABLE</span></div>
+            <div class="build-row"><span>BUILD DATE</span><span id="bBuildDate">2026-03-19</span></div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">TECH STACK</div>
+            <div class="build-row"><span>LANGUAGES</span><span>HTML5 · CSS3 · JS</span></div>
+            <div class="build-row"><span>API</span><span>Web Audio API</span></div>
+            <div class="build-row"><span>FONTS</span><span>Orbitron · Rajdhani · Bebas Neue</span></div>
+            <div class="build-row"><span>ARCH</span><span>Modular PWA</span></div>
+            <div class="build-row"><span>DEPLOY</span><span>GitHub Pages</span></div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">RUNTIME INFO</div>
+            <div class="build-row"><span>SAMPLE RATE</span><span id="bSampleRate">---</span></div>
+            <div class="build-row"><span>FFT SIZE</span><span id="bFftSize">---</span></div>
+            <div class="build-row"><span>FREQ RES</span><span id="bFreqRes">---</span></div>
+            <div class="build-row"><span>BROWSER</span><span id="bBrowser">---</span></div>
+        </div>
+        <div class="mgroup">
+            <div class="mgroup-title">ROADMAP</div>
+            <div class="build-row-full">✅ FFT + INFO overlay tabs</div>
+            <div class="build-row-full">✅ Trigger engine (AUTO/NORM/SINGLE)</div>
+            <div class="build-row-full">✅ Signal simulator (8 waveforms)</div>
+            <div class="build-row-full">✅ Artifact injection pipeline</div>
+            <div class="build-row-full">☐ Transfer function analysis (v2.0)</div>
+            <div class="build-row-full">☐ Self-calibration via TRRS loopback</div>
+            <div class="build-row-full">☐ Web Worker DSP engine</div>
+            <div class="build-row-full">☐ CSV export</div>
+        </div>
+        <div class="creator-card">
+            <div class="creator-card-header">⚡ CREATOR</div>
+            <div class="creator-card-body">
+                <div class="creator-row"><span class="creator-key">HANDLE</span><span class="creator-value">VinnsEdesigner</span></div>
+                <div class="creator-row"><span class="creator-key">ROLE</span><span class="creator-value">Electronics Hobbyist & Designer</span></div>
+                <div class="creator-row"><span class="creator-key">COUNTY</span><span class="creator-value">Nyeri</span></div>
+                <div class="creator-row"><span class="creator-key">COUNTRY</span><span class="creator-value">Kenya 🇰🇪</span></div>
+                <div class="creator-row"><span class="creator-key">REPO</span><span class="creator-value">github.com/VinnsEdesigner/My_scope</span></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ══════════════════════════════════════
+     SCRIPTS — load order matters
+     state → grid → signal-detect → measurements →
+     trigger → oscilloscope → fft → calibration →
+     audio → simulator → artifacts → audio-loader →
+     ui → app (last — boots everything)
+═══════════════════════════════════════ -->
+<script src="js/state.js"></script>
+<script src="js/grid.js"></script>
+<script src="js/signal-detect.js"></script>
+<script src="js/measurements.js"></script>
+<script src="js/trigger.js"></script>
+<script src="js/oscilloscope.js"></script>
+<script src="js/fft.js"></script>
+<script src="js/calibration.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/simulator.js"></script>
+<script src="js/artifacts.js"></script>
+<script src="js/audio-loader.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js?v=1.1.1')
+    .then(reg => {
+        reg.onupdatefound = () => {
+            const w = reg.installing;
+            w.onstatechange = () => {
+                if (w.state === 'installed' && navigator.serviceWorker.controller) {
+                    if (confirm('New version available! Reload?')) window.location.reload();
+                }
+            };
+        };
+    });
+}
+</script>
+</body>
+</html>
