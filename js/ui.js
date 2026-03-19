@@ -1,4 +1,4 @@
-// ── UI.JS v1.1.1 ──
+// ── UI.JS v1.1.3 PROPER ARCHITECTURE ──
 const UI = {
 
     toggleMenu() {
@@ -12,7 +12,6 @@ const UI = {
             t.classList.toggle('active', t.dataset.tab === tab);
         });
 
-        // show/hide SIM-only UI elements
         const simOnly = tab === 'sim';
         const chPills  = document.getElementById('chPills');
         const micBar   = document.getElementById('micBar');
@@ -21,13 +20,11 @@ const UI = {
         if (micBar)  micBar.classList.toggle('visible', simOnly);
         if (simWrap) simWrap.classList.toggle('visible', simOnly);
 
-        // show/hide SIM bottom buttons
         const simBtns  = document.getElementById('simBtns');
         const mainBtns = document.getElementById('mainBtns');
         if (simBtns)  simBtns.style.display  = simOnly ? ''  : 'none';
         if (mainBtns) mainBtns.style.display = simOnly ? 'none' : '';
 
-        // enter/exit sim mode
         if (simOnly && !State.simMode) this._enterSimMode();
         if (!simOnly && State.simMode)  this._exitSimMode();
 
@@ -46,7 +43,6 @@ const UI = {
     // ── SIM MODE ──
     _enterSimMode() {
         State.simMode = true;
-        // allocate arrays using simSampleRate if no real audioCtx
         if (!State.dataArray) {
             State.dataArray = new Uint8Array(State.fftSize);
             State.freqArray = new Uint8Array(State.fftSize / 2);
@@ -54,6 +50,10 @@ const UI = {
         const dot = document.getElementById('statusDot');
         if (dot) { dot.classList.remove('active'); dot.classList.add('sim'); }
         document.getElementById('statusTxt').innerText = 'SIM';
+        
+        // ✅ Init mic stream when entering SIM mode (stays on, we just choose when to use it)
+        App.initMicStream();
+        
         App.startLoop();
     },
 
@@ -73,6 +73,58 @@ const UI = {
         }
     },
 
+    // ✅ CHANNEL TOGGLE
+    toggleChannel(ch) {
+        if (ch === 1) {
+            State.sim.ch1Enabled = !State.sim.ch1Enabled;
+            const pill = document.getElementById('pill1');
+            const btn  = document.getElementById('ch1Toggle');
+            if (pill) pill.classList.toggle('off', !State.sim.ch1Enabled);
+            if (btn) {
+                btn.innerText = State.sim.ch1Enabled ? 'ON' : 'OFF';
+                btn.classList.toggle('active', State.sim.ch1Enabled);
+            }
+        } else if (ch === 2) {
+            State.sim.ch2Enabled = !State.sim.ch2Enabled;
+            const pill = document.getElementById('pill2');
+            const btn  = document.getElementById('ch2Toggle');
+            if (pill) pill.classList.toggle('off', !State.sim.ch2Enabled);
+            if (btn) {
+                btn.innerText = State.sim.ch2Enabled ? 'ON' : 'OFF';
+                btn.classList.toggle('active', State.sim.ch2Enabled);
+            }
+        } else if (ch === 3) {
+            State.sim.ch3Enabled = !State.sim.ch3Enabled;
+            const pill = document.getElementById('pill3');
+            const btn  = document.getElementById('ch3Toggle');
+            if (pill) pill.classList.toggle('off', !State.sim.ch3Enabled);
+            if (btn) {
+                btn.innerText = State.sim.ch3Enabled ? 'ON' : 'OFF';
+                btn.classList.toggle('active', State.sim.ch3Enabled);
+            }
+        }
+    },
+
+    // ✅ CH2 SOURCE TOGGLE (mic or file) - replaces toggleMic()
+    toggleCH2Source() {
+        const btn = document.getElementById('micToggleBtn');
+        const dot = document.getElementById('micDot');
+        const lbl = document.getElementById('micBarLabel');
+        
+        // Toggle between 'mic' and 'file'
+        if (State.sim.ch2Source === 'mic') {
+            State.sim.ch2Source = 'file';
+            if (btn) { btn.classList.remove('on'); btn.classList.add('off'); btn.innerText = '∨ FILE'; }
+            if (dot) dot.style.background = '#ff6d00'; // Orange for file mode
+            if (lbl) lbl.innerText = 'CH2 FILE — playback mode';
+        } else {
+            State.sim.ch2Source = 'mic';
+            if (btn) { btn.classList.remove('off'); btn.classList.add('on'); btn.innerText = '∨ MIC'; }
+            if (dot) dot.style.background = '#00ff41'; // Green for mic mode
+            if (lbl) lbl.innerText = 'CH2 MIC ● live capture';
+        }
+    },
+
     // ── SIM CONTROLS ──
     setSimWave(type) {
         State.sim.waveType = type;
@@ -80,32 +132,45 @@ const UI = {
         document.querySelectorAll('.wave-btn').forEach(b => {
             b.classList.toggle('active', b.dataset.wave === type);
         });
+        document.querySelectorAll('[data-wave]').forEach(b => {
+            if (b.classList.contains('mbtn-sel')) {
+                b.classList.toggle('active', b.dataset.wave === type);
+            }
+        });
+        const dutyRow = document.getElementById('dutyRow');
+        if (dutyRow) {
+            dutyRow.style.display = (type === 'pwm' || type === 'square') ? 'flex' : 'none';
+        }
     },
 
     setSimFreq(val) {
         State.sim.frequency = parseFloat(val);
-        const el = document.getElementById('simFreqVal');
-        if (el) el.innerText = val >= 1000
-            ? (val / 1000).toFixed(2) + 'kHz'
-            : Math.round(val) + 'Hz';
+        document.querySelectorAll('#simFreqVal, #simFreqValMenu').forEach(el => {
+            if (el) el.innerText = val >= 1000
+                ? (val / 1000).toFixed(2) + 'kHz'
+                : Math.round(val) + 'Hz';
+        });
     },
 
     setSimAmp(val) {
         State.sim.amplitude = parseFloat(val);
-        const el = document.getElementById('simAmpVal');
-        if (el) el.innerText = parseFloat(val).toFixed(2);
+        document.querySelectorAll('#simAmpVal, #simAmpValMenu').forEach(el => {
+            if (el) el.innerText = parseFloat(val).toFixed(2);
+        });
     },
 
     setSimPhase(val) {
         State.sim.phase = parseFloat(val);
-        const el = document.getElementById('simPhaseVal');
-        if (el) el.innerText = Math.round(val) + '°';
+        document.querySelectorAll('#simPhaseVal, #simPhaseValMenu').forEach(el => {
+            if (el) el.innerText = Math.round(val) + '°';
+        });
     },
 
     setSimDuty(val) {
         State.sim.dutyCycle = parseFloat(val) / 100;
-        const el = document.getElementById('simDutyVal');
-        if (el) el.innerText = Math.round(val) + '%';
+        document.querySelectorAll('#simDutyVal, #simDutyValMenu').forEach(el => {
+            if (el) el.innerText = Math.round(val) + '%';
+        });
     },
 
     toggleSimPlay() {
@@ -139,54 +204,58 @@ const UI = {
 
     // ── SIM SOURCE ──
     setSimSource(src) {
-        State.sim.source = src;
+        State.sim.ch2Source = src; // ✅ Set ch2Source directly
+        
         document.querySelectorAll('.src-btn').forEach(b => {
             b.className = 'src-btn' + (b.dataset.src === src
                 ? (src === 'synth' ? ' active-synth' : ' active-file')
                 : '');
         });
+        document.querySelectorAll('[data-src]').forEach(b => {
+            if (b.classList.contains('mbtn-sel')) {
+                b.classList.toggle('active', b.dataset.src === src);
+            }
+        });
+        
         const synthPanel = document.getElementById('simSynthPanel');
         const filePanel  = document.getElementById('simFilePanel');
         if (synthPanel) synthPanel.style.display = src === 'synth' ? 'flex' : 'none';
         if (filePanel)  filePanel.style.display  = src === 'file'  ? 'flex' : 'none';
-    },
-
-    // ── MIC TOGGLE ──
-    toggleMic() {
-        const btn = document.getElementById('micToggleBtn');
-        const dot = document.getElementById('micDot');
-        const currentlyOn = btn && btn.classList.contains('on');
-
-        if (currentlyOn) {
-            // disable mic
-            if (btn) { btn.classList.remove('on'); btn.classList.add('off'); btn.innerText = '∨ OFF'; }
-            if (dot) dot.style.background = '#333';
-            const lbl = document.getElementById('micBarLabel');
-            if (lbl) lbl.innerText = 'CH2 MIC — tap to enable';
-        } else {
-            // enable mic
-            if (btn) { btn.classList.remove('off'); btn.classList.add('on'); btn.innerText = '∨ ON'; }
-            if (dot) dot.style.background = '#00ff41';
-            const lbl = document.getElementById('micBarLabel');
-            if (lbl) lbl.innerText = 'CH2 MIC ● live';
+        
+        // ✅ Update mic bar label
+        const lbl = document.getElementById('micBarLabel');
+        if (lbl) {
+            lbl.innerText = src === 'mic' ? 'CH2 MIC ● live capture' : 'CH2 FILE — playback mode';
         }
     },
 
-    // ── FILE / REC BUTTONS ──
+    // ── FILE PICKER ──
     loadSimFile() {
-        document.getElementById('simFilePicker').click();
+        const picker = document.getElementById('simFilePicker');
+        if (picker) picker.click();
     },
 
     onSimFileSelected(input) {
         if (!input.files || !input.files[0]) return;
         const file = input.files[0];
-        const nameEl = document.getElementById('simFileName');
-        if (nameEl) { nameEl.innerText = file.name; nameEl.classList.remove('empty'); }
+        
+        document.querySelectorAll('#simFileName, #simFileNameMenu').forEach(el => {
+            if (el) {
+                el.innerText = file.name;
+                el.classList.remove('empty');
+            }
+        });
+        
         AudioLoader.loadFile(file);
+        
+        // ✅ Auto-switch to file source when file loaded
+        State.sim.ch2Source = 'file';
+        this.setSimSource('file');
     },
 
-    toggleSimRecord() {
-        AudioLoader.toggleRecord();
+    // ── RECORD TOGGLE ──
+    async toggleSimRecord() {
+        await AudioLoader.toggleRecord();
     },
 
     // ── EXISTING CONTROLS ──
@@ -262,7 +331,6 @@ const UI = {
         const menu = document.getElementById('voltDivValMenu');
         if (menu) menu.innerText = label;
 
-        // ── BUG5 FIX: linear mapping instead of clamped formula ──
         const maxIdx = VOLT_DIV_STEPS.length - 1;
         State.gain = 10 - (State.voltDivIndex / maxIdx) * 9;
         document.getElementById('gainSlider').value  = State.gain;
@@ -277,9 +345,7 @@ const UI = {
         link.click();
     },
 
-    // ── THEME: light mode removed ──
     setTheme(theme) {
-        // only 'dark' is valid — light mode removed
         State.theme = 'dark';
         document.documentElement.setAttribute('data-theme', 'dark');
         document.querySelectorAll('.theme-btn[data-theme]').forEach(b => {
@@ -287,7 +353,6 @@ const UI = {
         });
     },
 
-    // ── CANVAS COLORS ──
     setWaveColor(color) {
         State.waveColor = color;
         this._swatch('wave', color);
@@ -304,7 +369,6 @@ const UI = {
         this._swatch('meas', color);
     },
 
-    // ── SETTINGS SECTION ──
     setSettingsTextColor(color) {
         State.settingsTextColor = color;
         document.documentElement.style.setProperty('--text-mid',  color);
@@ -326,7 +390,6 @@ const UI = {
         if (el) el.innerText = v + '%';
     },
 
-    // ── SCOPE SECTION ──
     setScopeTextColor(color) {
         State.scopeTextColor = color;
         document.documentElement.style.setProperty('--neon',      color);
@@ -348,7 +411,6 @@ const UI = {
         if (el) el.innerText = v + '%';
     },
 
-    // ── INFO SECTION ──
     setInfoTextColor(color) {
         State.infoTextColor = color;
         this._swatch('info-text', color);
@@ -366,7 +428,6 @@ const UI = {
         if (el) el.innerText = v + '%';
     },
 
-    // ── HELPERS ──
     _swatch(group, value) {
         document.querySelectorAll(`.swatch-btn[data-group="${group}"]`).forEach(b => {
             b.classList.toggle('active', b.dataset.color === value);

@@ -1,4 +1,4 @@
-// ── STATE.JS v1.1.1 ──
+// ── STATE.JS v1.1.3 PROPER ARCHITECTURE ──
 const State = {
     // ── AUDIO ──
     audioCtx:   null,
@@ -33,11 +33,11 @@ const State = {
     calibVpp:       1.0,
 
     // ── CANVAS COLORS ──
-    waveColor: '#ff1744',   // RED default waveform
-    gridColor: '#001a1a',   // dark teal grid
+    waveColor: '#ff1744',
+    gridColor: '#001a1a',
 
     // ── MEASUREMENTS BAR COLOR ──
-    measColor: '#ffb300',   // amber — fixed default
+    measColor: '#ffb300',
 
     // ── SETTINGS PANEL SECTION ──
     settingsTextColor: '#00e5ff',
@@ -58,15 +58,30 @@ const State = {
     simMode:       false,
     simSampleRate: 44100,
     sim: {
-        source:    'synth',     // 'synth' | 'file'
-        waveType:  'sine',      // sine|square|triangle|sawtooth|ramp|pwm|noise|dc
-        frequency: 1000,
-        amplitude: 0.8,
-        phase:     0,
-        dutyCycle: 0.5,
-        playing:   false,
-        phase_acc: 0,           // internal phase accumulator
+        // CH1 params (synth reference)
+        waveType:     'sine',
+        frequency:    1000,
+        amplitude:    0.8,
+        phase:        0,
+        dutyCycle:    0.5,
+        playing:      false,
+        phase_acc:    0,
+        
+        // ✅ Channel enables
+        ch1Enabled:   true,        // Purple reference
+        ch2Enabled:   false,       // Red captured
+        ch3Enabled:   false,       // Cyan reconstructed
+        
+        // ✅ CH2 source selector (mic or file)
+        ch2Source:    'mic',       // 'mic' | 'file'
     },
+
+    // ── Multi-channel data buffers ──
+    ch2Data: null,  // Captured signal (mic or file)
+    ch3Data: null,  // Reconstructed signal
+
+    // ── Analyser results ──
+    analyserResult: null,
 
     // ── ANIMATION ──
     animId: null,
@@ -86,9 +101,6 @@ const FONT_MAP = {
 
 // ── SEMANTIC VERSION ──
 const APP_VERSION = {
-    major: 1, minor: 1, patch: 1,
+    major: 1, minor: 1, patch: 3,
     toString() { return `v${this.major}.${this.minor}.${this.patch}`; },
 };
-
-// ── NOTE: initializeTheme() is called from app.js after ALL scripts load ──
-// This prevents BUG1 where UI was called before it existed

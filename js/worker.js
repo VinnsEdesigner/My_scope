@@ -1,4 +1,4 @@
-// ── WORKER.JS v1.1.1 — DSP Web Worker ──
+// ── WORKER.JS v1.1.2 — DSP Web Worker (GitHub Pages Fixed) ──
 // Message handler only — all math lives in js/dsp/
 // Main thread: canvas draw + DOM only
 // This worker: ALL heavy DSP math
@@ -14,13 +14,14 @@
 
 'use strict';
 
+// ✅ FIXED: Absolute paths from root for GitHub Pages
 importScripts(
-    'dsp/simulator.js',
-    'dsp/artifacts.js',
-    'dsp/measurements.js',
-    'dsp/classifier.js',
-    'dsp/analyser.js',
-    'dsp/bode.js'
+    './js/dsp/simulator.js',
+    './js/dsp/artifacts.js',
+    './js/dsp/measurements.js',
+    './js/dsp/classifier.js',
+    './js/dsp/analyser.js',
+    './js/dsp/bode.js'
 );
 
 self.onmessage = function(e) {

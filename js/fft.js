@@ -1,4 +1,4 @@
-// ── FFT.JS v1.1.1 ──
+// ── FFT.JS v1.1.2 FIXED — With compact analyser overlay ──
 
 const FFT = {
 
@@ -77,12 +77,9 @@ const InfoView = {
 
         const ic   = State.infoTextColor  || '#ffb300';
         const font = FONT_MAP[State.infoFont] || FONT_MAP.mono;
-
-        // ── BUG4 FIX: sz correctly applied to font string ──
         const baseSz = 11;
         const sz     = Math.round(baseSz * (State.infoFontSize || 100) / 100);
 
-        // full-canvas glass backdrop
         ctx.fillStyle = 'rgba(0,0,0,0.84)';
         ctx.fillRect(0, 0, w, h);
 
@@ -126,7 +123,6 @@ const InfoView = {
               color: State.paused ? '#ffb300' : (State.isRunning || State.simMode ? '#00ff41' : '#444') },
         ];
 
-        // ── BUG4 FIX: use sz variable in font string ──
         ctx.font = `${sz}px ${font}`;
 
         lines.forEach((line, i) => {
@@ -152,24 +148,82 @@ const InfoView = {
     }
 };
 
-// ── SIM VIEW OVERLAY — shown on SIM tab ──
+// ✅ NEW: SIM VIEW OVERLAY with compact analyser
 const SimView = {
     drawOverlay(ctx, w, h) {
         if (w < 10 || h < 10) return;
         const sc = State.scopeTextColor || '#00e5ff';
+        const ac = '#ffb300'; // analyser color
 
-        // top-left: sim mode label
-        ctx.fillStyle = '#e040fb88';
+        // Top-left: channel labels
+        ctx.fillStyle = sc + '88';
         ctx.font      = "10px 'Share Tech Mono'";
-        ctx.fillText(`CH1 | SIM · ${State.sim.waveType.toUpperCase()}`, 8, 16);
+        let label = '';
+        if (State.sim.ch1Enabled) label = '●CH1';
+        if (State.sim.ch2Enabled) label += (label ? ' ●CH2' : '●CH2');
+        if (State.sim.ch3Enabled) label += (label ? ' ●CH3' : '●CH3');
+        ctx.fillText(label + ' | SIM', 8, 16);
 
-        // top-right: sample rate
+        // Top-right: sample rate
         ctx.fillStyle = sc + '66';
-        const srLabel = `${(State.simSampleRate / 1000).toFixed(1)}kHz · SIM`;
+        const srLabel = `${(State.simSampleRate / 1000).toFixed(1)}kHz`;
         const srW     = ctx.measureText(srLabel).width;
         ctx.fillText(srLabel, w - srW - 8, 16);
 
-        // bottom-right: freq
+        // ✅ COMPACT ANALYSER INFO (bottom-left corner)
+        if (State.analyserResult && State.analyserResult.detected && State.sim.ch2Enabled) {
+            const detected = State.analyserResult.detected;
+            if (detected.length > 0) {
+                // Semi-transparent background box
+                const boxH = Math.min(detected.length * 14 + 20, 120);
+                const boxW = 180;
+                ctx.fillStyle = 'rgba(0,0,0,0.75)';
+                ctx.fillRect(4, h - boxH - 4, boxW, boxH);
+                
+                // Border
+                ctx.strokeStyle = ac + '44';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(4, h - boxH - 4, boxW, boxH);
+
+                // Title
+                ctx.fillStyle = ac + 'cc';
+                ctx.font = "bold 9px 'Share Tech Mono'";
+                ctx.fillText('⚡ DETECTED', 10, h - boxH + 8);
+
+                // Detected artifacts (max 6 shown)
+                ctx.font = "8px 'Share Tech Mono'";
+                const maxShow = Math.min(6, detected.length);
+                for (let i = 0; i < maxShow; i++) {
+                    const item = detected[i];
+                    const y = h - boxH + 22 + (i * 14);
+                    
+                    // Label
+                    ctx.fillStyle = '#00e5ff' + '99';
+                    ctx.fillText(item.label, 10, y);
+                    
+                    // Value
+                    ctx.fillStyle = ac;
+                    const valW = ctx.measureText(item.value).width;
+                    ctx.fillText(item.value, boxW - valW - 6, y);
+                    
+                    // Confidence bar (mini)
+                    const barW = 30;
+                    const barX = boxW - barW - valW - 12;
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(barX, y - 7, barW, 3);
+                    ctx.fillStyle = item.confidence > 80 ? '#00ff41' : item.confidence > 60 ? '#ffb300' : '#ff6d00';
+                    ctx.fillRect(barX, y - 7, barW * (item.confidence / 100), 3);
+                }
+
+                // "More..." indicator if truncated
+                if (detected.length > 6) {
+                    ctx.fillStyle = ac + '66';
+                    ctx.fillText(`+${detected.length - 6} more...`, 10, h - 10);
+                }
+            }
+        }
+
+        // Bottom-right: freq display
         if (State.sim.frequency) {
             const fLabel = State.sim.frequency >= 1000
                 ? (State.sim.frequency / 1000).toFixed(2) + 'kHz'
