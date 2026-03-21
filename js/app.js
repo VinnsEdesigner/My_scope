@@ -1,7 +1,9 @@
-// ── APP.JS v1.1.3 PROPER ARCHITECTURE ──
-// CH1 = synth reference (always user-controlled)
-// CH2 = captured signal (mic live OR file playback)
-// CH3 = reconstructed (CH2 with artifacts removed)
+// ── APP.JS v1.1.7 ──
+// CH1 = State.dataArray  = mic live OR file PCM  (reference)
+// CH2 = State.ch2Data    = synth generated OR file PCM (comparison)
+// CH3 = State.ch3Data    = inverse artifact corrected
+// Single mic stream shared via State.micSource
+// Session persistence via Persist
 
 window.onerror = function(msg, src, line, col, err) {
     document.body.insertAdjacentHTML('afterbegin',
@@ -19,7 +21,6 @@ const App = {
     _msgId:   0,
     _pending: {},
 
-    // ── Frame state ──
     _frame: {
         dataArray: null,
         freqArray: null,
@@ -29,32 +30,67 @@ const App = {
         bode:      null,
     },
 
-    // ── Analyser timing ──
-    _lastAnalyseTime: 0,
-    _analyseInterval: 2000, // Run every 2 seconds
+    _lastAnalyseTime:  0,
+    _analyseInterval:  2000,
+    _lastCorrectTime:  0,
+    _correctInterval:  100,
 
-    // ✅ Mic stream (stays active but we choose when to use it)
-    _micStream:    null,
+    // CH1 mic analyser — taps into shared State.micSource
     _micAnalyser:  null,
     _micDataArray: null,
 
     // ══════════════════════════════════════
-    // BOOT
+    // BOOT — async to support permission check + auto-start
     // ══════════════════════════════════════
-    init() {
+    async init() {
+        // ── 1. Restore State from localStorage FIRST ──
+        // Must happen before UI renders so sliders/buttons
+        // get correct values on first paint
+        const hadSession = Persist.restoreFromLocalStorage();
+
+        // ── 2. Canvas setup ──
         this.canvas = document.getElementById('scopeCanvas');
         this.ctx    = this.canvas.getContext('2d');
-
         window.addEventListener('resize', () => this.resize());
         this.resize();
         this.drawIdle();
 
+        // ── 3. Worker + theme (reads already-restored State) ──
         this._initWorker();
         this._initializeTheme();
-        
-        // Initialize channel buffers
+
+        // ── 4. Sync all DOM elements to restored State ──
+        Persist.syncUIAfterRestore();
+
+        // ── 5. Switch to last active tab ──
+        UI.switchTab(State.currentTab);
+
+        // ── 6. IndexedDB restore (async, does not block boot) ──
+        // PCM buffers and analyserResult load in background
+        Persist.restoreFromIndexedDB();
+
+        // ── 7. Reset runtime buffers ──
         State.ch2Data = null;
         State.ch3Data = null;
+
+        // ── 8. Permission check → auto-start if session exists ──
+        if (hadSession) {
+            const granted = await Persist.checkMicPermission();
+            if (granted) {
+                // Silent auto-start — no splash button needed
+                await Audio.initSilent();
+
+                // If last tab was SIM, re-enter sim mode
+                if (State.currentTab === 'sim') {
+                    this.initMicStream();
+                    // Don't auto-play — user taps PLAY
+                }
+                return;
+            }
+        }
+
+        // ── First launch or permission not granted — show splash ──
+        document.getElementById('splash').style.display = 'flex';
     },
 
     // ══════════════════════════════════════
@@ -67,8 +103,11 @@ const App = {
             this.worker.onerror   = (err) => {
                 console.error('Worker error:', err.message);
                 const banner = document.createElement('div');
-                banner.style.cssText = 'position:fixed;top:60px;left:0;right:0;background:#ff6d00;color:#fff;padding:8px;font-size:11px;z-index:9998;text-align:center;font-family:monospace';
-                banner.innerText = '⚠️ Worker failed - using fallback mode (slower)';
+                banner.style.cssText =
+                    'position:fixed;top:60px;left:0;right:0;background:#ff6d00;' +
+                    'color:#fff;padding:8px;font-size:11px;z-index:9998;' +
+                    'text-align:center;font-family:monospace';
+                banner.innerText = '⚠️ Worker failed — using fallback mode (slower)';
                 document.body.appendChild(banner);
                 setTimeout(() => banner.remove(), 5000);
             };
@@ -88,7 +127,8 @@ const App = {
 
         switch (cmd) {
             case 'generate':
-                if (State.dataArray && data.dataArray) State.dataArray.set(data.dataArray);
+                // Synth output → CH2 buffer
+                if (State.ch2Data && data.dataArray) State.ch2Data.set(data.dataArray);
                 if (State.freqArray && data.freqArray) State.freqArray.set(data.freqArray);
                 break;
 
@@ -105,6 +145,14 @@ const App = {
             case 'analyse':
                 this._frame.analyse = data;
                 this._updateAnalyserDisplay(data);
+                break;
+
+            case 'correct':
+                if (State.ch3Data && data.ch3Array) {
+                    State.ch3Data.set(data.ch3Array);
+                } else if (data.ch3Array) {
+                    State.ch3Data = new Uint8Array(data.ch3Array);
+                }
                 break;
 
             case 'bode_sweep':
@@ -136,43 +184,33 @@ const App = {
     },
 
     // ══════════════════════════════════════
-    // MIC SETUP (stays on, we just choose when to use it)
+    // MIC SETUP — taps into State.micSource
     // ══════════════════════════════════════
-    async initMicStream() {
-        if (this._micStream) return; // Already initialized
+    initMicStream() {
+        if (!State.micSource || !State.audioCtx) {
+            console.warn('initMicStream: micSource not ready — START PROBE first');
+            return;
+        }
+        if (this._micAnalyser) return;
 
         try {
-            // ✅ Request mic permission (or reuse already-granted permission)
-            this._micStream = await navigator.mediaDevices.getUserMedia({
-                audio: {
-                    echoCancellation:  false,
-                    noiseSuppression:  false,
-                    autoGainControl:   false,
-                    channelCount:      1,
-                }
-            });
-
-            // Create dedicated analyser for mic
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const source   = audioCtx.createMediaStreamSource(this._micStream);
-            this._micAnalyser = audioCtx.createAnalyser();
-            this._micAnalyser.fftSize = State.fftSize;
-            this._micAnalyser.smoothingTimeConstant = 0.3; // Less smoothing for capture
-            source.connect(this._micAnalyser);
-
+            this._micAnalyser = State.audioCtx.createAnalyser();
+            this._micAnalyser.fftSize               = State.fftSize;
+            this._micAnalyser.smoothingTimeConstant  = 0.3;
+            State.micSource.connect(this._micAnalyser);
             this._micDataArray = new Uint8Array(this._micAnalyser.fftSize);
-
-            console.log('✓ Mic stream initialized for CH2 capture');
+            console.log('✓ CH1 mic analyser connected to shared micSource');
         } catch (err) {
-            console.error('CH2 mic init failed:', err);
-            
-            // ✅ Don't block - show warning but continue
-            const banner = document.createElement('div');
-            banner.style.cssText = 'position:fixed;top:60px;left:0;right:0;background:#ff6d00;color:#fff;padding:8px;font-size:11px;z-index:9998;text-align:center;font-family:monospace';
-            banner.innerText = '⚠️ CH2 mic unavailable - grant permission or use FILE mode';
-            document.body.appendChild(banner);
-            setTimeout(() => banner.remove(), 5000);
+            console.error('initMicStream failed:', err);
         }
+    },
+
+    _teardownMicStream() {
+        if (this._micAnalyser && State.micSource) {
+            try { State.micSource.disconnect(this._micAnalyser); } catch(e) {}
+        }
+        this._micAnalyser  = null;
+        this._micDataArray = null;
     },
 
     // ══════════════════════════════════════
@@ -183,36 +221,36 @@ const App = {
             State.animId = requestAnimationFrame(tick);
             if (State.paused) return;
 
-            const w = this.canvas.width, h = this.canvas.height;
+            const w = this.canvas.width;
+            const h = this.canvas.height;
 
             // ── SIM MODE ──
             if (State.simMode) {
                 if (!State.sim.playing) return;
 
-                // ✅ Generate CH1 (reference synth signal)
-                this._post({
-                    cmd:           'generate',
-                    simState:      { ...State.sim },
-                    fftSize:       State.fftSize,
-                    simSampleRate: State.simSampleRate,
-                });
+                if (!State.dataArray) State.dataArray = new Uint8Array(State.fftSize);
+                if (!State.ch2Data)   State.ch2Data   = new Uint8Array(State.fftSize);
 
-                // ✅ Handle CH2 (captured signal - mic OR file)
+                this._handleCH1();
+
                 if (State.sim.ch2Enabled) {
                     this._handleCH2();
                 }
 
-                // ✅ Handle CH3 (reconstructed signal)
-                if (State.sim.ch3Enabled && State.ch2Data) {
-                    this._handleCH3();
+                if (State.sim.ch3Enabled && State.ch2Data && State.analyserResult) {
+                    const now = Date.now();
+                    if (now - this._lastCorrectTime > this._correctInterval) {
+                        this._handleCH3();
+                        this._lastCorrectTime = now;
+                    }
                 }
 
-                // Measure CH1
                 if (State.dataArray) {
                     this._post({
                         cmd:        'measure',
                         dataArray:  new Uint8Array(State.dataArray),
-                        freqArray:  State.freqArray ? new Uint8Array(State.freqArray) : null,
+                        freqArray:  State.freqArray
+                            ? new Uint8Array(State.freqArray) : null,
                         sampleRate: State.simSampleRate,
                         fftSize:    State.fftSize,
                         calibFreq:  State.calibFreq,
@@ -222,7 +260,6 @@ const App = {
                     });
                 }
 
-                // Classify CH1 (every 10 frames)
                 if (State.dataArray && this._msgId % 10 === 0) {
                     this._post({
                         cmd:        'classify',
@@ -231,14 +268,21 @@ const App = {
                     });
                 }
 
-                // ✅ Run analyser (every 2 seconds when CH2 active)
                 const now = Date.now();
-                if (State.sim.ch2Enabled && State.ch2Data && (now - this._lastAnalyseTime) > this._analyseInterval) {
+                const ch1Active =
+                    (State.ch1Source === 'mic'  && !!this._micAnalyser) ||
+                    (State.ch1Source === 'file' && AudioLoader.hasCH1File);
+
+                if (
+                    ch1Active &&
+                    State.sim.ch2Enabled &&
+                    State.ch2Data &&
+                    (now - this._lastAnalyseTime) > this._analyseInterval
+                ) {
                     this._runAnalyser();
                     this._lastAnalyseTime = now;
                 }
 
-                // Apply artifacts to CH1 if knobs turned
                 if (State.dataArray && this._hasArtifacts()) {
                     this._post({
                         cmd:       'artifacts',
@@ -247,7 +291,6 @@ const App = {
                     });
                 }
 
-                // ── DRAW ──
                 Oscilloscope.draw(this.ctx, w, h);
                 if      (State.currentTab === 'fft')  FFT.drawOverlay(this.ctx, w, h);
                 else if (State.currentTab === 'info') InfoView.drawOverlay(this.ctx, w, h);
@@ -297,78 +340,86 @@ const App = {
     // CHANNEL HANDLERS
     // ══════════════════════════════════════
 
-    // ✅ CH2: Captured signal (mic live OR file playback)
-    _handleCH2() {
-        if (!State.ch2Data) {
-            State.ch2Data = new Uint8Array(State.fftSize);
-        }
+    _handleCH1() {
+        if (!State.dataArray) State.dataArray = new Uint8Array(State.fftSize);
 
-        // Decide source: mic or file
-        if (State.sim.ch2Source === 'mic') {
-            // ✅ Use LIVE MIC for CH2
+        if (State.ch1Source === 'mic') {
             if (this._micAnalyser && this._micDataArray) {
                 this._micAnalyser.getByteTimeDomainData(this._micDataArray);
-                State.ch2Data.set(this._micDataArray);
+                State.dataArray.set(this._micDataArray);
             } else {
-                // Mic not ready, init it
-                this.initMicStream();
+                State.dataArray.fill(128);
             }
-        } else if (State.sim.ch2Source === 'file' && AudioLoader.hasFile) {
-            // ✅ Use FILE PLAYBACK for CH2
+        } else if (State.ch1Source === 'file' && AudioLoader.hasCH1File) {
+            AudioLoader.fillFromFileCH1(State.dataArray);
+        } else {
+            State.dataArray.fill(128);
+        }
+    },
+
+    _handleCH2() {
+        if (!State.ch2Data) State.ch2Data = new Uint8Array(State.fftSize);
+
+        if (State.ch2Source === 'synth') {
+            this._post({
+                cmd:           'generate',
+                simState:      { ...State.sim },
+                fftSize:       State.fftSize,
+                simSampleRate: State.simSampleRate,
+            });
+        } else if (State.ch2Source === 'file' && AudioLoader.hasFile) {
             AudioLoader.fillFromFile(State.ch2Data);
         } else {
-            // No source - fill with silence
             State.ch2Data.fill(128);
         }
     },
 
-    // ✅ CH3: Reconstructed signal (CH2 with artifacts removed)
     _handleCH3() {
-        if (!State.ch3Data) {
-            State.ch3Data = new Uint8Array(State.fftSize);
-        }
+        if (!State.ch2Data || !State.analyserResult) return;
+        if (!State.ch3Data) State.ch3Data = new Uint8Array(State.fftSize);
 
-        // Copy CH2
-        if (State.ch2Data) {
-            State.ch3Data.set(State.ch2Data);
-        }
-
-        // TODO: Apply inverse artifact correction based on analyser results
-        // For now, just shows CH2 copy - full implementation would:
-        // 1. Read detected artifacts from State.analyserResult
-        // 2. Apply inverse HPF, AGC compensation, declipping, etc.
-        // 3. Result = "cleaned" version of CH2
+        this._post({
+            cmd:            'correct',
+            ch2Array:       new Uint8Array(State.ch2Data),
+            analyserResult: State.analyserResult,
+            sampleRate:     State.simSampleRate,
+        });
     },
 
-    // ✅ Run transfer function analyser
+    // ══════════════════════════════════════
+    // ANALYSER
+    // ══════════════════════════════════════
     _runAnalyser() {
         if (!State.dataArray || !State.ch2Data) return;
-        
         this._post({
             cmd:        'analyse',
-            ch1Array:   new Uint8Array(State.dataArray),  // Reference synth
-            ch2Array:   new Uint8Array(State.ch2Data),    // Captured
+            ch1Array:   new Uint8Array(State.dataArray),
+            ch2Array:   new Uint8Array(State.ch2Data),
             sampleRate: State.simSampleRate,
             fftSize:    State.fftSize,
         });
     },
 
-    // ✅ Update analyser info display
     _updateAnalyserDisplay(result) {
         if (!result || !result.detected) return;
         State.analyserResult = result;
+        // Persist analyser result to IndexedDB
+        Persist.saveAnalyserResult(result);
+        if (typeof UI !== 'undefined' && UI.updateAnalyserDisplay) {
+            UI.updateAnalyserDisplay(result);
+        }
     },
 
     // ══════════════════════════════════════
     // PUBLIC API
     // ══════════════════════════════════════
-    runAnalysis() {
-        this._runAnalyser();
-    },
+    runAnalysis() { this._runAnalyser(); },
 
-    runBodeSweep(startHz, stopHz, steps) {
-        if (!State.dataArray) return Promise.resolve(null);
-        const sr = State.simMode ? State.simSampleRate : (State.audioCtx ? State.audioCtx.sampleRate : 44100);
+    async runBodeSweep(startHz, stopHz, steps) {
+        if (!State.dataArray) return null;
+        const sr = State.simMode
+            ? State.simSampleRate
+            : (State.audioCtx ? State.audioCtx.sampleRate : 44100);
         return this._post({
             cmd:        'bode_sweep',
             ch1Array:   new Uint8Array(State.dataArray),
@@ -393,7 +444,7 @@ const App = {
     },
 
     resize() {
-        const area        = this.canvas.parentElement;
+        const area         = this.canvas.parentElement;
         this.canvas.width  = area.clientWidth;
         this.canvas.height = area.clientHeight;
         if (!State.isRunning && !State.simMode) this.drawIdle();

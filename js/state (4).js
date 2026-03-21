@@ -1,9 +1,10 @@
-// ── STATE.JS v1.1.3 PROPER ARCHITECTURE ──
+// ── STATE.JS v1.1.5 ──
 const State = {
     // ── AUDIO ──
     audioCtx:   null,
     analyser:   null,
-    dataArray:  null,
+    micSource:  null,   // shared MediaStreamSource — never duplicated
+    dataArray:  null,   // CH1 buffer (mic live or file PCM)
     freqArray:  null,
     isRunning:  false,
     paused:     false,
@@ -35,21 +36,22 @@ const State = {
     // ── CANVAS COLORS ──
     waveColor: '#ff1744',
     gridColor: '#001a1a',
-
-    // ── MEASUREMENTS BAR COLOR ──
     measColor: '#ffb300',
 
-    // ── SETTINGS PANEL SECTION ──
+    // ── THEME ──
+    theme: 'dark',
+
+    // ── SETTINGS PANEL ──
     settingsTextColor: '#00e5ff',
     settingsFont:      'retro',
     settingsFontSize:  120,
 
-    // ── SCOPE / MAIN AREA SECTION ──
+    // ── SCOPE DISPLAY ──
     scopeTextColor: '#00e5ff',
     scopeFont:      'retro',
     scopeFontSize:  120,
 
-    // ── SIGNAL INFO SECTION ──
+    // ── INFO OVERLAY ──
     infoTextColor: '#ffb300',
     infoFont:      'retro',
     infoFontSize:  120,
@@ -57,30 +59,48 @@ const State = {
     // ── SIM MODE ──
     simMode:       false,
     simSampleRate: 44100,
-    sim: {
-        // CH1 params (synth reference)
-        waveType:     'sine',
-        frequency:    1000,
-        amplitude:    0.8,
-        phase:        0,
-        dutyCycle:    0.5,
-        playing:      false,
-        phase_acc:    0,
-        
-        // ✅ Channel enables
-        ch1Enabled:   true,        // Purple reference
-        ch2Enabled:   false,       // Red captured
-        ch3Enabled:   false,       // Cyan reconstructed
-        
-        // ✅ CH2 source selector (mic or file)
-        ch2Source:    'mic',       // 'mic' | 'file'
+
+    // ── CHANNEL SOURCES — single source of truth ──
+    // CH1: 'mic' (default, live mic/AUX reference) | 'file'
+    // CH2: 'synth' (default, internal generator)   | 'file'
+    ch1Source: 'mic',
+    ch2Source: 'synth',
+
+    // ── PER-CHANNEL GAIN + OFFSET ──
+    ch1Gain:   3,
+    ch2Gain:   3,
+    ch2Offset: 0,
+
+    // ── BODE SWEEP SETTINGS ──
+    bode: {
+        startHz: 20,
+        stopHz:  20000,
+        steps:   50,
     },
 
-    // ── Multi-channel data buffers ──
-    ch2Data: null,  // Captured signal (mic or file)
-    ch3Data: null,  // Reconstructed signal
+    // ── SIM PARAMS (CH2 synth generator) ──
+    // ch2Source lives at State.ch2Source — not duplicated here
+    sim: {
+        waveType:   'sine',
+        frequency:  1000,
+        amplitude:  0.8,
+        phase:      0,
+        dutyCycle:  0.5,
+        playing:    false,
+        phase_acc:  0,
+        ch1Enabled: true,
+        ch2Enabled: false,
+        ch3Enabled: false,
+    },
 
-    // ── Analyser results ──
+    // ── MULTI-CHANNEL DATA BUFFERS ──
+    // dataArray = CH1  (mic live or file PCM)
+    // ch2Data   = CH2  (synth generated or file PCM)
+    // ch3Data   = CH3  (auto corrected output)
+    ch2Data: null,
+    ch3Data: null,
+
+    // ── ANALYSER RESULTS ──
     analyserResult: null,
 
     // ── ANIMATION ──
@@ -101,6 +121,6 @@ const FONT_MAP = {
 
 // ── SEMANTIC VERSION ──
 const APP_VERSION = {
-    major: 1, minor: 1, patch: 3,
+    major: 1, minor: 1, patch: 5,
     toString() { return `v${this.major}.${this.minor}.${this.patch}`; },
 };

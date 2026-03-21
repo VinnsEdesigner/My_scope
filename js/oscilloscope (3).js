@@ -1,4 +1,4 @@
-// ── OSCILLOSCOPE.JS v1.1.2 FIXED — Multi-channel stable rendering ──
+// ── OSCILLOSCOPE.JS v1.1.3 ── per-channel gain + CH2 offset
 const Oscilloscope = {
     draw(ctx, w, h) {
         if (w < 10 || h < 10) return;
@@ -27,33 +27,53 @@ const Oscilloscope = {
         // ══════════════════════════════════════
         if (State.simMode) {
             const sliceW = w / visibleSamples;
-            
-            // ── CH3: Corrected (cyan) — draw first (background layer) ──
+
+            // CH3: corrected (cyan) — background layer
             if (State.sim.ch3Enabled && State.ch3Data) {
-                this._drawChannel(ctx, State.ch3Data, offset, visibleSamples, sliceW, w, h, '#00e5ff', 1.5);
+                this._drawChannel(
+                    ctx, State.ch3Data, offset, visibleSamples,
+                    sliceW, w, h, '#00e5ff', 1.5,
+                    State.ch2Gain,   // CH3 uses ch2 gain as base
+                    0                // no extra offset
+                );
             }
 
-            // ── CH2: Mic raw (red) — middle layer ──
+            // CH2: comparison (red) — middle layer
             if (State.sim.ch2Enabled && State.ch2Data) {
-                this._drawChannel(ctx, State.ch2Data, offset, visibleSamples, sliceW, w, h, '#ff1744', 2);
+                this._drawChannel(
+                    ctx, State.ch2Data, offset, visibleSamples,
+                    sliceW, w, h, '#ff1744', 2,
+                    State.ch2Gain,
+                    State.ch2Offset
+                );
             }
 
-            // ── CH1: Reference (purple) — foreground layer ──
+            // CH1: reference (purple) — foreground layer
             if (State.sim.ch1Enabled) {
-                this._drawChannel(ctx, data, offset, visibleSamples, sliceW, w, h, '#e040fb', 2);
+                this._drawChannel(
+                    ctx, data, offset, visibleSamples,
+                    sliceW, w, h, '#e040fb', 2,
+                    State.ch1Gain,
+                    0
+                );
             }
         } else {
             // ══════════════════════════════════════
             // SINGLE CHANNEL (LIVE MODE)
             // ══════════════════════════════════════
             const sliceW = w / visibleSamples;
-            this._drawChannel(ctx, data, offset, visibleSamples, sliceW, w, h, State.waveColor, 2);
+            this._drawChannel(
+                ctx, data, offset, visibleSamples,
+                sliceW, w, h, State.waveColor, 2,
+                State.gain,
+                0
+            );
         }
 
         // ── Overlay text ──
         ctx.fillStyle = (State.scopeTextColor || '#00e5ff') + '66';
         ctx.font      = "10px 'Share Tech Mono'";
-        
+
         if (State.simMode) {
             let label = '';
             if (State.sim.ch1Enabled) label += 'CH1';
@@ -71,8 +91,9 @@ const Oscilloscope = {
         }
     },
 
-    // ── Stable single-channel renderer ──
-    _drawChannel(ctx, data, offset, visibleSamples, sliceW, w, h, color, lineWidth) {
+    // ── Single channel renderer ──
+    // gain and yOffset are explicit — no global State.gain bleed
+    _drawChannel(ctx, data, offset, visibleSamples, sliceW, w, h, color, lineWidth, gain, yOffset) {
         ctx.save();
         ctx.strokeStyle = color;
         ctx.lineWidth   = lineWidth;
@@ -80,25 +101,27 @@ const Oscilloscope = {
         ctx.shadowColor = color + '88';
         ctx.beginPath();
 
+        const effectiveGain   = gain   || 3;
+        const effectiveOffset = yOffset || 0;
         let x = 0;
         let validPoints = 0;
-        
+        let prevY = null;
+
         for (let i = 0; i < visibleSamples; i++) {
             const idx = offset + i;
             if (idx >= data.length) break;
-            
+
             const raw = data[idx];
-            const v   = ((raw / 128.0) - 1.0) * State.gain;
-            const y   = h / 2 - (v * h / Grid.ROWS);
-            
-            // ✅ Clamp Y to prevent instability
+            const v   = ((raw / 128.0) - 1.0) * effectiveGain;
+            const y   = (h / 2) - (v * h / Grid.ROWS) + effectiveOffset;
+
+            // Clamp to canvas bounds
             const clampedY = Math.max(1, Math.min(h - 1, y));
-            
-            if (i === 0) {
+
+            if (i === 0 || prevY === null) {
                 ctx.moveTo(x, clampedY);
             } else {
-                // ✅ Skip huge jumps (prevents visual glitches)
-                const prevY = ctx.currentY || clampedY;
+                // Skip visually destructive jumps
                 if (Math.abs(clampedY - prevY) < h * 0.8) {
                     ctx.lineTo(x, clampedY);
                     validPoints++;
@@ -106,16 +129,13 @@ const Oscilloscope = {
                     ctx.moveTo(x, clampedY);
                 }
             }
-            
-            ctx.currentY = clampedY;
-            x += sliceW;
+
+            prevY = clampedY;
+            x    += sliceW;
         }
-        
-        // Only draw if we have valid points
-        if (validPoints > 2) {
-            ctx.stroke();
-        }
-        
+
+        if (validPoints > 2) ctx.stroke();
+
         ctx.shadowBlur = 0;
         ctx.restore();
     }

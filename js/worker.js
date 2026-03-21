@@ -1,27 +1,15 @@
-// ── WORKER.JS v1.1.2 — DSP Web Worker (GitHub Pages Fixed) ──
-// Message handler only — all math lives in js/dsp/
-// Main thread: canvas draw + DOM only
-// This worker: ALL heavy DSP math
-//
-// Commands:
-//   { cmd: 'generate',   id, simState, fftSize, simSampleRate }
-//   { cmd: 'measure',    id, dataArray, freqArray, sampleRate, fftSize, calibFreq, calibVpp, simMode, simFreq }
-//   { cmd: 'artifacts',  id, dataArray, params }
-//   { cmd: 'classify',   id, dataArray, sampleRate }
-//   { cmd: 'analyse',    id, ch1Array, ch2Array, sampleRate, fftSize }
-//   { cmd: 'bode_point', id, ch1Array, ch2Array, freqHz, sampleRate }
-//   { cmd: 'bode_sweep', id, ch1Array, ch2Array, startHz, stopHz, steps, sampleRate }
-
+// ── WORKER.JS v1.1.4 ──
+// Relative importScripts paths — works on GitHub Pages subdirectory repos
 'use strict';
 
-// ✅ FIXED: Absolute paths from root for GitHub Pages
 importScripts(
-    '/js/dsp/simulator.js',
-    '/js/dsp/artifacts.js',
-    '/js/dsp/measurements.js',
-    '/js/dsp/classifier.js',
-    '/js/dsp/analyser.js',
-    '/js/dsp/bode.js'
+    'dsp/simulator.js',
+    'dsp/artifacts.js',
+    'dsp/measurements.js',
+    'dsp/classifier.js',
+    'dsp/analyser.js',
+    'dsp/bode.js',
+    'dsp/correction.js'
 );
 
 self.onmessage = function(e) {
@@ -54,10 +42,7 @@ self.onmessage = function(e) {
             case 'artifacts': {
                 const { dataArray, params } = e.data;
                 const result = applyArtifacts(dataArray, params);
-                self.postMessage(
-                    { cmd, id, dataArray: result },
-                    [result.buffer]
-                );
+                self.postMessage({ cmd, id, dataArray: result }, [result.buffer]);
                 break;
             }
 
@@ -72,6 +57,16 @@ self.onmessage = function(e) {
                 const { ch1Array, ch2Array, sampleRate, fftSize } = e.data;
                 const result = dspAnalyse(ch1Array, ch2Array, sampleRate, fftSize);
                 self.postMessage({ cmd, id, ...result });
+                break;
+            }
+
+            case 'correct': {
+                const { ch2Array, analyserResult, sampleRate } = e.data;
+                const result = dspCorrect(ch2Array, analyserResult, sampleRate);
+                self.postMessage(
+                    { cmd, id, ch3Array: result },
+                    [result.buffer]
+                );
                 break;
             }
 
