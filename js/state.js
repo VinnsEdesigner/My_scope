@@ -1,17 +1,18 @@
-// ── STATE.JS v1.3.0 ──
+// ── STATE.JS v1.3.2 ──
 const State = {
     // ── AUDIO ──
-    audioCtx:   null,
-    analyser:   null,
-    micSource:  null,
-    dataArray:  null,
-    freqArray:  null,
-    isRunning:  false,
-    paused:     false,
+    audioCtx:     null,
+    analyser:     null,
+    micSource:    null,
+    dataArray:    null,
+    freqArray:    null,
+    ch1FreqArray: null,
+    isRunning:    false,
+    paused:       false,
 
     // ── DISPLAY ──
     currentTab:      'osc',
-    oscViewChannel:  'ch1',   // ch picker for OSC/FFT/INFO tabs in SIM mode
+    oscViewChannel:  'ch1',
     zoom:            1,
     gain:            3,
     smoothing:       0.6,
@@ -34,28 +35,27 @@ const State = {
     calibFreq:      1.0,
     calibVpp:       1.0,
 
-    // ── CANVAS COLORS ──
-    waveColor: '#ff1744',
-    gridColor: '#001a1a',
-    measColor: '#ffb300',
+    // ── CANVAS / CHANNEL COLORS ──
+    waveColor:  '#ff1744',    // live mode waveform (backwards compat)
+    ch1Color:   '#e040fb',    // CH1 — purple
+    ch2Color:   '#ff1744',    // CH2 — red
+    ch3Color:   '#00e5ff',    // CH3 — cyan
+    gridColor:  '#001a1a',
+    measColor:  '#ffb300',
 
     // ── THEME ──
     theme: 'dark',
 
-    // ── SETTINGS PANEL ──
+    // ── SETTINGS (kept for persist compat) ──
     settingsTextColor: '#00e5ff',
     settingsFont:      'retro',
     settingsFontSize:  120,
-
-    // ── SCOPE DISPLAY ──
-    scopeTextColor: '#00e5ff',
-    scopeFont:      'retro',
-    scopeFontSize:  120,
-
-    // ── INFO OVERLAY ──
-    infoTextColor: '#ffb300',
-    infoFont:      'retro',
-    infoFontSize:  120,
+    scopeTextColor:    '#00e5ff',
+    scopeFont:         'retro',
+    scopeFontSize:     120,
+    infoTextColor:     '#ffb300',
+    infoFont:          'retro',
+    infoFontSize:      120,
 
     // ── SIM MODE ──
     simMode:       false,
@@ -71,11 +71,7 @@ const State = {
     ch2Offset: 0,
 
     // ── BODE SWEEP SETTINGS ──
-    bode: {
-        startHz: 20,
-        stopHz:  20000,
-        steps:   50,
-    },
+    bode: { startHz: 20, stopHz: 20000, steps: 50 },
 
     // ── SIM PARAMS ──
     sim: {
@@ -102,11 +98,9 @@ const State = {
     animId: null,
 };
 
-// ── TIMEBASE / VOLT STEPS ──
 const TIME_DIV_STEPS = [0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500];
 const VOLT_DIV_STEPS = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0];
 
-// ── FONT MAP ──
 const FONT_MAP = {
     retro:  "'Orbitron', monospace",
     mono:   "'Share Tech Mono', monospace",
@@ -114,8 +108,7 @@ const FONT_MAP = {
     pro:    "'Bebas Neue', sans-serif",
 };
 
-// ── SEMANTIC VERSION ──
 const APP_VERSION = {
-    major: 1, minor: 3, patch: 0,
+    major: 1, minor: 3, patch: 2,
     toString() { return `v${this.major}.${this.minor}.${this.patch}`; },
 };

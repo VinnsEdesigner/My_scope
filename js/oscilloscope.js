@@ -1,25 +1,23 @@
-// ── OSCILLOSCOPE.JS v1.2.0 — channel-view pill support ──
+// ── OSCILLOSCOPE.JS v1.2.1 — per-channel colors from State ──
 const Oscilloscope = {
-
     draw(ctx, w, h) {
         if (w < 10 || h < 10) return;
         ctx.clearRect(0, 0, w, h);
         Grid.draw(ctx, w, h);
 
-        // pick data buffer based on active view
-        const viewCh   = State.oscViewChannel || 'ch1';
-        let   viewData = State.dataArray;
-        let   viewColor = State.waveColor;
+        const viewCh = State.oscViewChannel || 'ch1';
+        let viewData = State.dataArray;
+        let viewColor;
 
         if (State.simMode) {
-            if (viewCh === 'ch2' && State.ch2Data)  { viewData = State.ch2Data;  viewColor = '#ff1744'; }
-            if (viewCh === 'ch3' && State.ch3Data)  { viewData = State.ch3Data;  viewColor = '#00e5ff'; }
-            if (viewCh === 'ch1')                   { viewData = State.dataArray; viewColor = '#e040fb'; }
+            if      (viewCh === 'ch2' && State.ch2Data) { viewData = State.ch2Data;  viewColor = State.ch2Color || '#ff1744'; }
+            else if (viewCh === 'ch3' && State.ch3Data) { viewData = State.ch3Data;  viewColor = State.ch3Color || '#00e5ff'; }
+            else                                         { viewData = State.dataArray; viewColor = State.ch1Color || '#e040fb'; }
+        } else {
+            viewColor = State.waveColor || '#ff1744';
         }
 
-        const data = State.triggerMode === 'single' && State.triggerFrame
-            ? State.triggerFrame
-            : viewData;
+        const data = State.triggerMode === 'single' && State.triggerFrame ? State.triggerFrame : viewData;
         if (!data) return;
 
         const visibleSamples = Math.floor(data.length / State.zoom);
@@ -37,30 +35,22 @@ const Oscilloscope = {
         const sliceW = w / visibleSamples;
 
         if (State.simMode && State.currentTab === 'sim') {
-            // SIM tab — draw all enabled channels
-            if (State.sim.ch3Enabled && State.ch3Data) {
-                this._drawChannel(ctx, State.ch3Data, offset, visibleSamples, sliceW, w, h, '#00e5ff', 1.5, State.ch2Gain, 0);
-            }
-            if (State.sim.ch2Enabled && State.ch2Data) {
-                this._drawChannel(ctx, State.ch2Data, offset, visibleSamples, sliceW, w, h, '#ff1744', 2, State.ch2Gain, State.ch2Offset);
-            }
-            if (State.sim.ch1Enabled) {
-                this._drawChannel(ctx, State.dataArray, offset, visibleSamples, sliceW, w, h, '#e040fb', 2, State.ch1Gain, 0);
-            }
+            if (State.sim.ch3Enabled && State.ch3Data)
+                this._drawChannel(ctx, State.ch3Data, offset, visibleSamples, sliceW, w, h, State.ch3Color || '#00e5ff', 1.5, State.ch2Gain, 0);
+            if (State.sim.ch2Enabled && State.ch2Data)
+                this._drawChannel(ctx, State.ch2Data, offset, visibleSamples, sliceW, w, h, State.ch2Color || '#ff1744', 2, State.ch2Gain, State.ch2Offset);
+            if (State.sim.ch1Enabled)
+                this._drawChannel(ctx, State.dataArray, offset, visibleSamples, sliceW, w, h, State.ch1Color || '#e040fb', 2, State.ch1Gain, 0);
         } else {
-            // OSC / FFT / INFO tabs — single channel, full canvas, clean
-            const gain = State.simMode
-                ? (viewCh === 'ch2' ? State.ch2Gain : State.ch1Gain)
-                : State.gain;
+            const gain = State.simMode ? (viewCh === 'ch2' ? State.ch2Gain : State.ch1Gain) : State.gain;
             this._drawChannel(ctx, data, offset, visibleSamples, sliceW, w, h, viewColor, 2.5, gain, 0);
         }
 
-        // overlay label — top left
         ctx.fillStyle = (State.scopeTextColor || '#00e5ff') + '88';
         ctx.font      = "11px 'Share Tech Mono'";
         let modeStr;
         if (State.simMode) {
-            const chLabel = { ch1: 'CH1', ch2: 'CH2', ch3: 'CH3' }[viewCh] || 'CH1';
+            const chLabel = { ch1:'CH1', ch2:'CH2', ch3:'CH3' }[viewCh] || 'CH1';
             modeStr = State.currentTab === 'sim' ? 'CH1+CH2+CH3 | SIM' : `${chLabel} | SIM`;
         } else {
             modeStr = State.triggerEnabled
@@ -85,22 +75,14 @@ const Oscilloscope = {
         for (let i = 0; i < visibleSamples; i++) {
             const idx = offset + i;
             if (idx >= data.length) break;
-            const v      = ((data[idx] / 128.0) - 1.0) * g;
-            const y      = (h / 2) - (v * h / Grid.ROWS) + yo;
-            const cy     = Math.max(1, Math.min(h - 1, y));
-
-            if (i === 0 || prevY === null) {
-                ctx.moveTo(x, cy);
-            } else if (Math.abs(cy - prevY) < h * 0.85) {
-                ctx.lineTo(x, cy);
-                validPoints++;
-            } else {
-                ctx.moveTo(x, cy);
-            }
-            prevY = cy;
-            x += sliceW;
+            const v  = ((data[idx] / 128.0) - 1.0) * g;
+            const y  = (h / 2) - (v * h / Grid.ROWS) + yo;
+            const cy = Math.max(1, Math.min(h - 1, y));
+            if (i === 0 || prevY === null) { ctx.moveTo(x, cy); }
+            else if (Math.abs(cy - prevY) < h * 0.85) { ctx.lineTo(x, cy); validPoints++; }
+            else { ctx.moveTo(x, cy); }
+            prevY = cy; x += sliceW;
         }
-
         if (validPoints > 2) ctx.stroke();
         ctx.shadowBlur = 0;
         ctx.restore();
