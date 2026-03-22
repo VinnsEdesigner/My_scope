@@ -1,11 +1,9 @@
-// ── MEASUREMENTS.JS v1.1.1 ──
+// ── MEASUREMENTS.JS v1.1.2 ──
 const Measurements = {
 
-    // ── Called every frame on main thread (legacy path) ──
     update() {
         if (!State.dataArray) return;
 
-        // simMode: use known frequency directly
         if (State.simMode) {
             const freqEl = document.getElementById('mFreq');
             if (freqEl) {
@@ -34,7 +32,6 @@ const Measurements = {
             ? (20 * Math.log10(parseFloat(rms))).toFixed(1)
             : '-∞';
 
-        // live freq from FFT (only when not simMode)
         if (!State.simMode && State.analyser && State.freqArray) {
             let peakIdx = 0, peakVal = 0;
             for (let i = 2; i < State.freqArray.length; i++) {
@@ -71,8 +68,6 @@ const Measurements = {
         return { vpp: parseFloat(vpp), rms: parseFloat(rms), db: parseFloat(db) };
     },
 
-    // ── Called by app.js when worker returns measure result ──
-    // Replaces update() DOM writes when worker is active
     applyWorkerResult(r) {
         if (!r) return;
 
@@ -90,9 +85,17 @@ const Measurements = {
             dbEl.innerText  = r.db != null && isFinite(r.db) ? r.db.toFixed(1) + 'dB' : '-∞dB';
             dbEl.className  = 'meas-value' + (r.db > -6 ? ' alert' : r.db > -18 ? ' warn' : '');
         }
-        if (freqEl && !State.simMode) {
-            freqEl.innerText = r.freq > 20 ? r.freq + 'Hz' : '---';
-            freqEl.className = 'meas-value';
+        // ── FIX: always update freq — was blocked by !State.simMode guard ──
+        if (freqEl) {
+            if (State.simMode) {
+                // In sim mode — use known frequency from State (exact, no FFT needed)
+                const f = State.sim.frequency || 0;
+                freqEl.innerText = f >= 1000 ? (f / 1000).toFixed(2) + 'kHz' : f > 0 ? f + 'Hz' : '---';
+                freqEl.className = 'meas-value';
+            } else {
+                freqEl.innerText = r.freq > 20 ? r.freq + 'Hz' : '---';
+                freqEl.className = 'meas-value';
+            }
         }
     }
 };

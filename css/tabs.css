@@ -1,4 +1,4 @@
-/* ── TABS.CSS v1.1.1 ── */
+/* ── TABS.CSS v1.1.2 ── */
 #tabs {
     display:       flex;
     background:    var(--panel);
@@ -19,10 +19,10 @@
     user-select:    none;
     font-family:    var(--font-ui);
 }
-/* purple active tab */
+/* CYAN active tab */
 .tab.active {
-    color:               var(--purple);
-    border-bottom-color: var(--purple);
-    background:          rgba(224,64,251,0.05);
+    color:               var(--cyan);
+    border-bottom-color: var(--cyan);
+    background:          rgba(0,229,255,0.05);
 }
-.tab:active { background: rgba(224,64,251,0.08); }
+.tab:active { background: rgba(0,229,255,0.06); }

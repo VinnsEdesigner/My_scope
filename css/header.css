@@ -1,19 +1,19 @@
-/* ── HEADER.CSS v1.1.1 — FIXED BRAND COLORS ── */
+/* ── HEADER.CSS v1.1.2 — white/grey text ── */
 #header {
     display:         flex;
     align-items:     center;
     justify-content: space-between;
     padding:         9px 14px;
-    background:      #020c02;        /* FIXED — never changes */
-    border-bottom:   1px solid rgba(0,229,255,0.12);
+    background:      #0d1117;
+    border-bottom:   1px solid var(--border);
     flex-shrink:     0;
     gap:             10px;
 }
 
 #hamburgerBtn {
     background:    transparent;
-    border:        1px solid rgba(0,229,255,0.25);
-    color:         #00e5ff;
+    border:        1px solid var(--border);
+    color:         var(--text-mid);
     font-size:     1.3em;
     padding:       6px 12px;
     border-radius: 5px;
@@ -24,20 +24,20 @@
     min-width:     44px;
     min-height:    38px;
 }
-#hamburgerBtn:active { background: rgba(0,229,255,0.1); }
+#hamburgerBtn:active { background: rgba(255,255,255,0.06); }
 
-/* ── FIXED BRAND LOGO — never changes with theme ── */
+/* Logo — keep brand colors */
 .logo {
-    font-family:  'Orbitron', monospace;
-    font-weight:  900;
-    font-size:    1.15em;
+    font-family:    'Orbitron', monospace;
+    font-weight:    900;
+    font-size:      1.15em;
     letter-spacing: 3px;
-    flex:         1;
-    text-align:   center;
-    line-height:  1;
+    flex:           1;
+    text-align:     center;
+    line-height:    1;
 }
-.logo-lab   { color: #ffb300; }   /* amber — FIXED */
-.logo-scope { color: #00e5ff; }   /* cyan  — FIXED */
+.logo-lab   { color: #ffb300; }
+.logo-scope { color: #00e5ff; }
 .logo-pro {
     font-family:    'Share Tech Mono', monospace;
     font-size:      0.55em;
@@ -45,9 +45,9 @@
     letter-spacing: 2px;
     padding:        2px 7px;
     border-radius:  10px;
-    border:         1px solid rgba(0,229,255,0.4);
-    background:     rgba(0,229,255,0.12);
-    color:          #00e5ff;
+    border:         1px solid rgba(255,255,255,0.2);
+    background:     rgba(255,255,255,0.06);
+    color:          rgba(255,255,255,0.7);
     margin-left:    6px;
     vertical-align: middle;
 }
@@ -59,7 +59,7 @@
     flex-shrink: 0;
 }
 
-/* signal type badge — color changes based on signal (that's data, not brand) */
+/* Signal badge — white/grey, no color */
 .sig-badge {
     font-family:    var(--font-display);
     font-size:      0.65em;
@@ -67,48 +67,48 @@
     letter-spacing: 1.5px;
     padding:        4px 9px;
     border-radius:  4px;
-    border:         1px solid var(--cyan);
-    color:          #000;
-    background:     var(--cyan);
+    border:         1px solid var(--border);
+    color:          var(--text-mid);
+    background:     var(--panel);
     transition:     all 0.3s;
     min-width:      64px;
     text-align:     center;
 }
-.sig-badge.sine     { background: #00e5ff; border-color: #00e5ff; color: #000; }
-.sig-badge.square   { background: #ffb300; border-color: #ffb300; color: #000; }
-.sig-badge.triangle { background: #e040fb; border-color: #e040fb; color: #000; }
-.sig-badge.sawtooth { background: #ff6d00; border-color: #ff6d00; color: #000; }
-.sig-badge.noise    { background: #ff1744; border-color: #ff1744; color: #fff; }
-.sig-badge.dc       { background: #00e5ff; border-color: #00e5ff; color: #000; }
+/* Only LIVE signal types get subtle color hint — very muted */
+.sig-badge.sine     { color: var(--text-main); border-color: var(--border-bright); }
+.sig-badge.square   { color: var(--text-main); border-color: var(--border-bright); }
+.sig-badge.triangle { color: var(--text-main); border-color: var(--border-bright); }
+.sig-badge.sawtooth { color: var(--text-main); border-color: var(--border-bright); }
+.sig-badge.noise    { color: var(--text-dim); }
+.sig-badge.dc       { color: var(--text-main); border-color: var(--border-bright); }
 
 .status-label {
     font-size:      0.7em;
-    color:          var(--text-mid);
+    color:          var(--text-dim);
     letter-spacing: 1px;
     font-family:    var(--font-ui);
 }
 
-/* status dot: red=off, green=live, purple=sim */
+/* Status dot — only dot keeps color (it's an indicator, not label) */
 .status-dot {
-    width:         10px;
-    height:        10px;
+    width:         8px;
+    height:        8px;
     border-radius: 50%;
-    background:    var(--red);
-    box-shadow:    0 0 6px var(--red);
+    background:    var(--border-bright);
     transition:    all 0.3s;
     flex-shrink:   0;
 }
 .status-dot.active {
     background: #00ff41;
-    box-shadow: 0 0 8px rgba(0,255,65,0.6);
+    box-shadow: 0 0 6px rgba(0,255,65,0.5);
     animation:  dot-pulse 1.2s infinite;
 }
 .status-dot.sim {
-    background: var(--purple);
-    box-shadow: 0 0 8px rgba(224,64,251,0.6);
+    background: var(--cyan);
+    box-shadow: 0 0 6px rgba(0,229,255,0.4);
     animation:  dot-pulse 1.2s infinite;
 }
 @keyframes dot-pulse {
     0%,100% { opacity: 1; }
-    50%     { opacity: 0.3; }
+    50%      { opacity: 0.3; }
 }

@@ -1,8 +1,29 @@
-/* ── SIMULATOR.CSS v1.1.1 ── */
+/* ── SIMULATOR.CSS v1.2.0 ── */
 
-/* ── CHANNEL PILLS ROW ── */
+/* ── OSC CHANNEL INDICATOR — slim strip on OSC/FFT/INFO tabs in SIM mode ── */
+#oscPills {
+    display:         none;
+    align-items:     center;
+    gap:             4px;
+    padding:         3px 10px;
+    background:      var(--panel);
+    border-bottom:   1px solid var(--border);
+    flex-shrink:     0;
+    min-height:      0;
+}
+#oscPills.visible { display: flex; }
+
+/* Make oscPills pills slimmer than chPills */
+#oscPills .ch-pill {
+    padding:     2px 8px;
+    font-size:   0.55em;
+    border-radius: 10px;
+}
+#oscPills .ch-dot { width: 5px; height: 5px; }
+
+/* ── SIM CHANNEL PILLS ROW ── */
 #chPills {
-    display:         none; /* shown only on SIM tab */
+    display:         none;
     align-items:     center;
     gap:             6px;
     padding:         5px 12px;
@@ -31,6 +52,9 @@
 .ch-pill.off     { opacity: 0.3; }
 .ch-pill:active  { opacity: 0.7; }
 
+/* Active pill highlight (used by oscPills) */
+.ch-pill.active  { box-shadow: 0 0 8px currentColor; }
+
 .ch-pill-1 { border-color: #e040fb; color: #e040fb; background: rgba(224,64,251,0.1); }
 .ch-pill-1 .ch-dot { background: #e040fb; }
 .ch-pill-2 { border-color: #ff1744; color: #ff1744; background: rgba(255,23,68,0.1); }
@@ -40,7 +64,7 @@
 
 /* ── MIC CHEVRON BAR ── */
 #micBar {
-    display:     none; /* shown only on SIM tab */
+    display:     none;
     align-items: center;
     gap:         8px;
     padding:     5px 12px;
@@ -69,10 +93,10 @@
 
 /* ── SIM CHEVRON COLLAPSIBLE PANEL ── */
 #simChevronWrap {
-    display:        none; /* shown only on SIM tab */
+    display:        none;
     flex-direction: column;
     background:     var(--panel);
-    border-top:     1px solid rgba(224,64,251,0.2);
+    border-top:     1px solid var(--border);
     flex-shrink:    0;
     overflow:       hidden;
 }
@@ -83,15 +107,14 @@
     align-items:     center;
     justify-content: center;
     padding:         3px 0;
-    border-bottom:   1px solid rgba(224,64,251,0.15);
+    border-bottom:   1px solid var(--border);
     cursor:          pointer;
     flex-shrink:     0;
     user-select:     none;
 }
 .sim-chevron-bar span { font-size: 9px; color: var(--purple); }
-.sim-chevron-bar:active { background: rgba(224,64,251,0.08); }
+.sim-chevron-bar:active { background: rgba(255,255,255,0.05); }
 
-/* scrollable inner content — fixed 120px max height */
 .sim-chevron-content {
     max-height:     120px;
     overflow-y:     auto;
@@ -101,12 +124,11 @@
     gap:            5px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: rgba(224,64,251,0.3) transparent;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
 }
 .sim-chevron-content::-webkit-scrollbar       { width: 3px; }
-.sim-chevron-content::-webkit-scrollbar-thumb { background: rgba(224,64,251,0.3); border-radius: 2px; }
+.sim-chevron-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
 
-/* collapsed strip */
 .sim-collapsed-strip {
     display:         flex;
     align-items:     center;
@@ -117,8 +139,8 @@
     gap:             10px;
 }
 .sim-collapsed-strip .strip-line { flex: 1; height: 1px; background: rgba(224,64,251,0.2); max-width: 40px; }
-.sim-collapsed-strip span        { font-size: 5.5px; color: rgba(224,64,251,0.4); letter-spacing: 1px; }
-.sim-collapsed-strip:active      { background: rgba(224,64,251,0.06); }
+.sim-collapsed-strip span        { font-size: 5.5px; color: var(--text-dim); letter-spacing: 1px; }
+.sim-collapsed-strip:active      { background: rgba(255,255,255,0.04); }
 
 /* ── WAVEFORM SELECTOR GRID ── */
 .wave-grid {
@@ -141,7 +163,6 @@
     transition:     all 0.2s;
     min-height:     30px;
 }
-/* PURPLE active wave button */
 .wave-btn.active {
     background:   var(--purple-solid);
     color:        #fff;
@@ -150,11 +171,7 @@
 }
 .wave-btn:active { opacity: 0.75; }
 
-/* ── SOURCE TOGGLE ── */
-.src-row {
-    display: flex;
-    gap:     4px;
-}
+.src-row { display: flex; gap: 4px; }
 .src-btn {
     font-size:     0.6em;
     padding:       4px 10px;
@@ -171,40 +188,16 @@
 .src-btn.active-file  { border-color: var(--cyan);   color: var(--cyan);   background: rgba(0,229,255,0.1);  font-weight: bold; }
 .src-btn:active { opacity: 0.75; }
 
-/* ── FILE AREA ── */
-.sim-file-area {
-    display:        flex;
-    flex-direction: column;
-    gap:            5px;
-}
-.sim-file-name {
-    font-family:    var(--font-display);
-    font-size:      0.62em;
-    color:          var(--cyan);
-    letter-spacing: 1px;
-    padding:        3px 0;
-    word-break:     break-all;
-}
+.sim-file-area { display: flex; flex-direction: column; gap: 5px; }
+.sim-file-name { font-family: var(--font-display); font-size: 0.62em; color: var(--cyan); letter-spacing: 1px; padding: 3px 0; word-break: break-all; }
 .sim-file-name.empty { color: var(--text-dim); }
-.sim-status {
-    font-family:    var(--font-ui);
-    font-size:      0.6em;
-    color:          var(--text-mid);
-    letter-spacing: 1px;
-    min-height:     16px;
-}
+.sim-status { font-family: var(--font-ui); font-size: 0.6em; color: var(--text-mid); letter-spacing: 1px; min-height: 16px; }
 .sim-status.recording { color: var(--red); }
 #simFilePicker { display: none; }
 
-/* ── ARTIFACT STAGE 2 TITLE ── */
 .artifact-stage2 .mgroup-title { color: var(--amber); }
 
-/* ── OSC CONTROLS (used in SIM panel too) ── */
-.osc-ctrl-row {
-    display:     flex;
-    align-items: center;
-    gap:         8px;
-}
+.osc-ctrl-row { display: flex; align-items: center; gap: 8px; }
 .osc-ctrl-label {
     font-family:    var(--font-ui);
     font-size:      0.65em;

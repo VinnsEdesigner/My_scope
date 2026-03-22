@@ -1,4 +1,4 @@
-/* ── MENU.CSS v1.1.1 ── */
+/* ── MENU.CSS v1.1.2 ── */
 
 #menuOverlay {
     display:    none;
@@ -16,8 +16,8 @@
     width:      90vw;
     max-width:  360px;
     height:     100%;
-    background: #010a01;
-    border-right: 1px solid var(--border-bright);
+    background: #0d1117;
+    border-right: 1px solid var(--border);
     z-index:    300;
     display:    flex;
     flex-direction: column;
@@ -41,12 +41,12 @@
     font-family:    var(--font-display);
     font-size:      0.95em;
     letter-spacing: 3px;
-    color:          var(--cyan);
+    color:          var(--text-main);
 }
 .menu-close {
     background:    transparent;
     border:        1px solid var(--border);
-    color:         var(--cyan);
+    color:         var(--text-main);
     font-size:     1.1em;
     padding:       5px 12px;
     border-radius: 4px;
@@ -55,7 +55,7 @@
     min-width:     44px;
     min-height:    38px;
 }
-.menu-close:active { background: rgba(0,229,255,0.1); }
+.menu-close:active { background: rgba(255,255,255,0.06); }
 
 #menuTabs {
     display:       flex;
@@ -83,9 +83,9 @@
     display:        flex;
     align-items:    center;
 }
-/* PURPLE active menu tab */
-.mtab.active { color: var(--purple); border-bottom-color: var(--purple); }
-.mtab:active { background: rgba(224,64,251,0.08); }
+/* CYAN active menu tab */
+.mtab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+.mtab:active { background: rgba(0,229,255,0.05); }
 
 .mpanel {
     display:    none;
@@ -94,10 +94,10 @@
     padding:    14px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    scrollbar-color: rgba(0,229,255,0.2) transparent;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
 }
 .mpanel::-webkit-scrollbar       { width: 4px; }
-.mpanel::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.2); border-radius: 2px; }
+.mpanel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
 .mpanel.active { display: block; }
 
 .mgroup {
@@ -112,7 +112,7 @@
     padding:        9px 12px;
     font-size:      0.72em;
     letter-spacing: 2px;
-    color:          var(--cyan);
+    color:          var(--text-mid);
     border-bottom:  1px solid var(--border);
     font-family:    var(--font-display);
 }
@@ -123,7 +123,7 @@
     justify-content: space-between;
     padding:         10px 12px;
     gap:             10px;
-    border-bottom:   1px solid rgba(0,229,255,0.05);
+    border-bottom:   1px solid rgba(255,255,255,0.04);
     min-height:      46px;
 }
 .mrow:last-child { border-bottom: none; }
@@ -139,11 +139,10 @@
     font-family:    var(--font-ui);
 }
 
-/* amber values in menu */
 .mval {
     font-family: var(--font-display);
     font-size:   0.75em;
-    color:       var(--amber);
+    color:       var(--text-main);
     min-width:   54px;
     text-align:  right;
 }
@@ -184,7 +183,7 @@
 .mbtn {
     background:    transparent;
     border:        1px solid var(--border);
-    color:         var(--cyan);
+    color:         var(--text-main);
     font-family:   var(--font-ui);
     font-size:     0.85em;
     padding:       6px 12px;
@@ -192,9 +191,9 @@
     cursor:        pointer;
     min-width:     38px; min-height: 38px;
 }
-.mbtn:active { background: rgba(0,229,255,0.1); }
+.mbtn:active { background: rgba(255,255,255,0.06); }
 
-/* PURPLE active selector buttons */
+/* CYAN active selector buttons */
 .mbtn-sel {
     background:     transparent;
     border:         1px solid var(--border);
@@ -209,9 +208,9 @@
     min-height:     36px;
 }
 .mbtn-sel.active {
-    background:   var(--purple-solid);
-    color:        #fff;
-    border-color: var(--purple);
+    background:   var(--cyan);
+    color:        #000;
+    border-color: var(--cyan);
     font-weight:  bold;
 }
 .mbtn-sel:active { opacity: 0.8; }
@@ -219,8 +218,8 @@
 .mbtn-full {
     width:          100%;
     background:     transparent;
-    border:         1px solid var(--cyan);
-    color:          var(--cyan);
+    border:         1px solid var(--border-bright);
+    color:          var(--text-main);
     font-family:    var(--font-ui);
     font-size:      0.72em;
     letter-spacing: 1.5px;
@@ -230,11 +229,10 @@
     transition:     all 0.15s;
     min-height:     46px;
 }
-.mbtn-full:active      { background: rgba(0,229,255,0.1); }
+.mbtn-full:active      { background: rgba(255,255,255,0.06); }
 .btn-danger-full       { border-color: var(--red); color: var(--red); }
 .btn-danger-full:active{ background: rgba(255,23,68,0.15); }
 
-/* theme grid — removed light theme button */
 .theme-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -256,8 +254,8 @@
     transition:     all 0.2s;
     min-height:     44px;
 }
-/* PURPLE active theme button */
-.theme-btn.active { border-color: var(--purple); color: var(--purple); background: rgba(224,64,251,0.08); }
+/* CYAN active theme button */
+.theme-btn.active { border-color: var(--cyan); color: var(--cyan); background: rgba(0,229,255,0.08); }
 .theme-btn:active { opacity: 0.8; }
 
 .mcalib-info {
@@ -265,7 +263,7 @@
     font-size:     0.68em;
     color:         var(--text-mid);
     line-height:   1.7;
-    border-bottom: 1px solid rgba(0,229,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
     font-family:   var(--font-ui);
 }
 
@@ -276,7 +274,7 @@
     line-height: 1.9;
     font-family: var(--font-ui);
 }
-.manual-text b { color: var(--cyan); }
+.manual-text b { color: var(--text-main); }
 
 .build-row {
     display:         flex;
@@ -285,13 +283,12 @@
     padding:         9px 12px;
     font-size:       0.7em;
     color:           var(--text-mid);
-    border-bottom:   1px solid rgba(0,229,255,0.05);
+    border-bottom:   1px solid rgba(255,255,255,0.04);
     font-family:     var(--font-ui);
     min-height:      40px;
 }
 .build-row:last-child { border-bottom: none; }
 .build-row span:last-child { color: var(--amber); font-family: var(--font-display); font-size: 0.72em; }
-.build-row-full { padding: 7px 12px; font-size: 0.68em; color: var(--text-mid); font-family: var(--font-ui); }
 
 .creator-card {
     margin: 14px 12px 4px;
@@ -316,12 +313,12 @@
     padding:       5px 0;
     font-size:     0.7em;
     font-family:   var(--font-ui);
-    border-bottom: 1px solid rgba(0,229,255,0.04);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
     align-items:   center;
 }
 .creator-row:last-child { border-bottom: none; }
 .creator-key   { color: var(--text-dim); min-width: 72px; }
-.creator-value { color: var(--cyan); }
+.creator-value { color: var(--text-main); }
 
 /* ── COLOR SWATCHES ── */
 .swatch-row {
@@ -339,10 +336,10 @@
     transition:    all 0.2s;
     flex-shrink:   0;
 }
-/* purple ring on active swatch */
+/* CYAN ring on active swatch */
 .swatch-btn.active {
-    border-color: var(--purple);
-    box-shadow:   0 0 8px rgba(224,64,251,0.6);
+    border-color: var(--cyan);
+    box-shadow:   0 0 8px rgba(0,229,255,0.5);
     transform:    scale(1.22);
 }
 .swatch-btn:active { transform: scale(0.9); }
@@ -363,11 +360,11 @@
     line-height:    1.4;
 }
 .font-pick-btn small { display: block; opacity: 0.7; font-size: 0.55em; }
-/* purple active font button */
+/* cyan active font button */
 .font-pick-btn.active {
-    border-color: var(--purple);
-    color:        var(--purple);
-    background:   rgba(224,64,251,0.08);
+    border-color: var(--cyan);
+    color:        var(--cyan);
+    background:   rgba(0,229,255,0.08);
 }
 .font-pick-btn:active { opacity: 0.75; }
 
@@ -377,7 +374,7 @@
     font-size:      0.75em;
     font-weight:    700;
     letter-spacing: 2.5px;
-    color:          var(--amber);
+    color:          var(--text-mid);
     padding:        16px 14px 8px;
     border-top:     1px solid var(--border);
     margin-top:     4px;

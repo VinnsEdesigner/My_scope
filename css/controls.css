@@ -1,4 +1,4 @@
-/* ── CONTROLS.CSS v1.1.1 ── */
+/* ── CONTROLS.CSS v1.1.2 ── */
 #controls {
     padding:     9px 12px;
     background:  var(--panel);
@@ -6,13 +6,12 @@
     flex-shrink: 0;
 }
 
-/* OSC/INFO/FFT tabs — 3 button row */
 .btn-row   { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
 .btn-row-2 { display: grid; grid-template-columns: 1fr 1fr;     gap: 8px; }
 
 button {
     font-family:    var(--font-ui);
-    border:         1px solid var(--cyan);
+    border:         1px solid var(--border-bright);
     border-radius:  5px;
     padding:        12px 6px;
     font-size:      0.72em;
@@ -22,17 +21,17 @@ button {
     user-select:    none;
     min-height:     44px;
     background:     transparent;
-    color:          var(--cyan);
+    color:          var(--text-main);
 }
 button:active { transform: scale(0.96); }
 
 /* primary — cyan solid */
-.btn-primary         { background: var(--cyan); color: #000; font-weight: bold; }
+.btn-primary         { background: var(--cyan); color: #000; font-weight: bold; border-color: var(--cyan); }
 .btn-primary:active  { background: rgba(0,229,255,0.7); }
 
-/* secondary — cyan outline */
-.btn-secondary       { background: transparent; color: var(--cyan); }
-.btn-secondary:active{ background: rgba(0,229,255,0.1); }
+/* secondary — grey outline */
+.btn-secondary       { background: transparent; color: var(--text-mid); border-color: var(--border-bright); }
+.btn-secondary:active{ background: rgba(255,255,255,0.06); }
 
 /* danger */
 .btn-danger          { color: var(--red);   border-color: var(--red); }
@@ -42,6 +41,6 @@ button:active { transform: scale(0.96); }
 .btn-amber           { color: var(--amber); border-color: var(--amber); }
 .btn-amber:active    { background: rgba(255,179,0,0.15); }
 
-/* active/selected state — PURPLE */
-.btn-active          { background: var(--purple-solid); color: #fff; border-color: var(--purple); font-weight: bold; }
+/* active/selected state — CYAN */
+.btn-active          { background: var(--cyan); color: #000; border-color: var(--cyan); font-weight: bold; }
 .btn-active:active   { opacity: 0.85; }

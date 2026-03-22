@@ -66,9 +66,9 @@ const UI = {
         // oscPills evaluated AFTER _enterSimMode — simMode is now set
         const oscPills = document.getElementById('oscPills');
         if (oscPills) oscPills.classList.toggle('visible', !simOnly && State.simMode);
-        // Never call _exitSimMode on tab switch — sim lives across all tabs
-        // Don't auto-exit sim mode on tab switch — sim stays alive across OSC/FFT/INFO tabs
-        // so pills remain visible. _exitSimMode only called from Audio.reset().
+
+        // Sync PAUSE/PLAY button state across tabs
+        this._syncPlayPauseButtons();
 
         App.resize();
         Persist.save();
@@ -107,6 +107,8 @@ const UI = {
 
         App.initMicStream();
         App.startLoop();
+        // Sync play/pause buttons on entry
+        this._syncPlayPauseButtons();
     },
 
     _exitSimMode() {
@@ -704,11 +706,7 @@ const UI = {
 
     toggleSimPlay() {
         State.sim.playing = !State.sim.playing;
-        const btn = document.getElementById('simPlayBtn');
-        if (btn) {
-            btn.innerText = State.sim.playing ? '⏸ PAUSE' : '▶ PLAY';
-            btn.className = State.sim.playing ? 'btn-primary' : 'btn-secondary';
-        }
+        this._syncPlayPauseButtons();
         Persist.scheduleSave();
     },
 
@@ -741,13 +739,49 @@ const UI = {
     // EXISTING CONTROLS
     // ══════════════════════════════════════
     togglePause() {
-        State.paused = !State.paused;
-        const btn = document.getElementById('pauseBtn');
-        btn.innerText = State.paused ? '▶ RESUME' : '⏸ PAUSE';
-        btn.className = State.paused ? 'btn-secondary' : 'btn-primary';
-        document.getElementById('statusTxt').innerText = State.paused ? 'PAUSED' : 'LIVE';
-        if (State.paused) document.getElementById('statusDot').classList.remove('active');
-        else              document.getElementById('statusDot').classList.add('active');
+        if (State.simMode) {
+            // In sim mode — OSC PAUSE controls sim.playing (same as SIM PLAY button)
+            State.sim.playing = !State.sim.playing;
+            this._syncPlayPauseButtons();
+            Persist.scheduleSave();
+        } else {
+            State.paused = !State.paused;
+            const btn = document.getElementById('pauseBtn');
+            if (btn) {
+                btn.innerText = State.paused ? '▶ RESUME' : '⏸ PAUSE';
+                btn.className = State.paused ? 'btn-secondary' : 'btn-primary';
+            }
+            document.getElementById('statusTxt').innerText = State.paused ? 'PAUSED' : 'LIVE';
+            if (State.paused) document.getElementById('statusDot').classList.remove('active');
+            else              document.getElementById('statusDot').classList.add('active');
+        }
+    },
+
+    // Sync both pauseBtn (OSC tabs) and simPlayBtn (SIM tab) to actual state
+    _syncPlayPauseButtons() {
+        if (!State.simMode) return;
+        const playing = State.sim.playing;
+
+        // OSC tab pause button
+        const pauseBtn = document.getElementById('pauseBtn');
+        if (pauseBtn) {
+            pauseBtn.innerText = playing ? '⏸ PAUSE' : '▶ PLAY';
+            pauseBtn.className = playing ? 'btn-primary' : 'btn-secondary';
+            pauseBtn.disabled  = false;
+        }
+
+        // SIM tab play button
+        const simPlayBtn = document.getElementById('simPlayBtn');
+        if (simPlayBtn) {
+            simPlayBtn.innerText = playing ? '⏸ PAUSE' : '▶ PLAY';
+            simPlayBtn.className = playing ? 'btn-primary' : 'btn-secondary';
+        }
+
+        // Status dot + text
+        const dot = document.getElementById('statusDot');
+        const txt = document.getElementById('statusTxt');
+        if (dot) { dot.classList.toggle('sim', true); dot.classList.toggle('active', false); }
+        if (txt) txt.innerText = playing ? 'SIM' : 'SIM PAUSED';
     },
 
     updateZoom(v) {
@@ -835,11 +869,35 @@ const UI = {
     // THEME
     // ══════════════════════════════════════
     setTheme(theme) {
-        State.theme = 'dark';
-        document.documentElement.setAttribute('data-theme', 'dark');
+        State.theme = theme;
+        document.documentElement.setAttribute('data-theme', theme);
         document.querySelectorAll('.theme-btn[data-theme]').forEach(b => {
-            b.classList.toggle('active', b.dataset.theme === 'dark');
+            b.classList.toggle('active', b.dataset.theme === theme);
         });
+        // Re-sync scope/grid colors for canvas when switching themes
+        if (theme === 'github') {
+            // GitHub canvas colors — set as State overrides
+            if (!State._darkWaveColor) {
+                State._darkWaveColor = State.waveColor;
+                State._darkGridColor = State.gridColor;
+                State._darkScopeText = State.scopeTextColor;
+                State._darkMeasColor = State.measColor;
+            }
+            State.waveColor      = '#cf222e';
+            State.gridColor      = '#eaeef2';
+            State.scopeTextColor = '#0969da';
+            State.measColor      = '#0969da';
+        } else {
+            // Restore dark theme colors
+            if (State._darkWaveColor) {
+                State.waveColor      = State._darkWaveColor;
+                State.gridColor      = State._darkGridColor;
+                State.scopeTextColor = State._darkScopeText;
+                State.measColor      = State._darkMeasColor;
+                State._darkWaveColor = null;
+            }
+        }
+        Persist.scheduleSave();
     },
 
     setWaveColor(color) {

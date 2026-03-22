@@ -1,71 +1,245 @@
-/* ── BASE.CSS v1.1.1 ── */
+/* ── BASE.CSS v1.2.0 — DARK + GITHUB LIGHT THEMES ── */
 
-/* ── SINGLE DARK THEME ONLY — light mode removed ── */
+/* ══════════════════════════════════════
+   DEFAULT: DARK THEME (original)
+══════════════════════════════════════ */
 :root {
-    /* ── BRAND COLORS (fixed, never change) ── */
-    --brand-lab:    #ffb300;   /* amber  — LAB  in header */
-    --brand-scope:  #00e5ff;   /* cyan   — SCOPE in header */
+    --brand-lab:    #ffb300;
+    --brand-scope:  #00e5ff;
     --brand-pro-bg: rgba(0,229,255,0.15);
     --brand-pro-br: rgba(0,229,255,0.5);
 
-    /* ── UI ACCENT COLORS ── */
-    --cyan:         #00e5ff;   /* primary UI text */
-    --amber:        #ffb300;   /* measurements + warnings */
-    --purple:       #e040fb;   /* active/selected state */
-    --purple-solid: #534AB7;   /* solid purple button */
-    --red:          #ff1744;   /* danger + default waveform */
-    --orange:       #ff6d00;   /* alert level */
-    --green:        #00ff41;   /* live indicator dot only */
+    /* accent colours */
+    --cyan:         #00e5ff;   /* selected state + scope overlays */
+    --amber:        #ffb300;
+    --purple:       #e040fb;
+    --purple-solid: #534AB7;
+    --red:          #ff1744;
+    --orange:       #ff6d00;
+    --green:        #00ff41;
 
     /* ── BACKGROUNDS ── */
-    --bg:           #020c02;
-    --panel:        #030f03;
-    --panel2:       #051205;
-    --card-bg:      #030f03;
-    --input-bg:     #011201;
+    --bg:           #0d1117;   /* very dark grey-black (GitHub dark) */
+    --panel:        #161b22;   /* slightly lighter panel */
+    --panel2:       #1c2128;
+    --card-bg:      #161b22;
+    --input-bg:     #0d1117;
 
-    /* ── BORDERS ── */
-    --border:        rgba(0,229,255,0.15);
-    --border-bright: rgba(0,229,255,0.35);
-    --input-border:  rgba(0,229,255,0.3);
+    /* ── BORDERS: white/grey, not teal ── */
+    --border:        rgba(255,255,255,0.10);
+    --border-bright: rgba(255,255,255,0.25);
+    --input-border:  rgba(255,255,255,0.18);
 
-    /* ── GRID ── */
-    --grid:         #001a1a;
+    /* ── GRID: mid-grey ── */
+    --grid:         #21262d;
 
-    /* ── TEXT ── */
-    --text-dim:     rgba(0,229,255,0.3);
-    --text-mid:     rgba(0,229,255,0.6);
-    --text-main:    #00e5ff;
+    /* ── TEXT: white/grey — not teal ── */
+    --text-dim:     rgba(255,255,255,0.25);
+    --text-mid:     rgba(255,255,255,0.55);
+    --text-main:    rgba(255,255,255,0.88);
 
-    /* ── CANVAS COLORS ── */
-    --canvas-wave:  #ff1744;   /* default red waveform */
-    --canvas-grid:  #001a1a;
-    --canvas-text:  rgba(0,229,255,0.4);
+    /* ── CANVAS: unchanged — stays dark with teal scope ── */
+    --canvas-wave:  #ff1744;
+    --canvas-grid:  #21262d;
+    --canvas-text:  rgba(0,229,255,0.5);
 
-    /* ── NEON aliases (used by legacy components) ── */
+    /* ── NEON: still teal — scope overlays use this ── */
     --neon:         #00e5ff;
-    --neon-dim:     rgba(0,229,255,0.4);
-    --neon-glow:    rgba(0,229,255,0.25);
+    --neon-dim:     rgba(0,229,255,0.45);
+    --neon-glow:    rgba(0,229,255,0.2);
 }
 
-/* ── FONT VARIABLES ── */
+/* ══════════════════════════════════════
+   GITHUB LIGHT THEME
+   Activate via: document.documentElement.setAttribute('data-theme','github')
+   Zero JS changes — pure CSS variables
+══════════════════════════════════════ */
+[data-theme="github"] {
+    /* GitHub's actual design tokens */
+    --brand-lab:    #0969da;   /* GitHub blue — LAB */
+    --brand-scope:  #1f883d;   /* GitHub green — SCOPE */
+    --brand-pro-bg: rgba(9,105,218,0.08);
+    --brand-pro-br: rgba(9,105,218,0.3);
+
+    --cyan:         #0969da;   /* primary — GitHub blue */
+    --amber:        #9a6700;   /* GitHub yellow-dark (readable on white) */
+    --purple:       #8250df;   /* GitHub purple */
+    --purple-solid: #8250df;
+    --red:          #cf222e;   /* GitHub red */
+    --orange:       #bc4c00;   /* GitHub orange */
+    --green:        #1f883d;   /* GitHub green */
+
+    --bg:           #ffffff;   /* white page bg */
+    --panel:        #f6f8fa;   /* GitHub gray panel */
+    --panel2:       #eaeef2;
+    --card-bg:      #ffffff;
+    --input-bg:     #ffffff;
+
+    --border:        #d0d7de;  /* GitHub standard border */
+    --border-bright: #0969da;
+    --input-border:  #d0d7de;
+
+    --grid:         #eaeef2;   /* very light gray grid lines */
+
+    --text-dim:     #656d76;   /* GitHub muted text */
+    --text-mid:     #424a53;   /* GitHub secondary text */
+    --text-main:    #1f2328;   /* GitHub primary text (near-black) */
+
+    --canvas-wave:  #cf222e;
+    --canvas-grid:  #eaeef2;
+    --canvas-text:  #656d76;
+
+    --neon:         #0969da;
+    --neon-dim:     rgba(9,105,218,0.5);
+    --neon-glow:    rgba(9,105,218,0.15);
+}
+
+/* GitHub theme — canvas area needs white bg not black */
+[data-theme="github"] #scopeArea       { background: #ffffff; }
+[data-theme="github"] canvas           { background: #ffffff; }
+[data-theme="github"] #scopeArea::after {
+    background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 4px
+    );
+}
+
+/* GitHub — header stays branded */
+[data-theme="github"] #header          { background: #24292f; border-bottom-color: #444c56; }
+[data-theme="github"] .logo-lab        { color: #f78166; }   /* GitHub red-ish accent */
+[data-theme="github"] .logo-scope      { color: #79c0ff; }   /* GitHub blue light */
+[data-theme="github"] .logo-pro        { color: #79c0ff; border-color: rgba(121,192,255,0.4); background: rgba(121,192,255,0.1); }
+[data-theme="github"] #hamburgerBtn    { color: #e6edf3; border-color: rgba(230,237,243,0.2); }
+[data-theme="github"] .status-label   { color: rgba(230,237,243,0.6); }
+
+/* GitHub — tabs */
+[data-theme="github"] #tabs            { background: #f6f8fa; border-bottom-color: #d0d7de; }
+[data-theme="github"] .tab             { color: #656d76; }
+[data-theme="github"] .tab.active      { color: #0969da; border-bottom-color: #0969da; background: rgba(9,105,218,0.04); }
+
+/* GitHub — measurements bar */
+[data-theme="github"] #measurements   { background: #d0d7de; }
+[data-theme="github"] .meas           { background: #f6f8fa; }
+[data-theme="github"] .meas-label     { color: #656d76; }
+[data-theme="github"] .meas-value     { color: #0969da; }
+
+/* GitHub — controls */
+[data-theme="github"] #controls        { background: #f6f8fa; border-top-color: #d0d7de; }
+[data-theme="github"] button           { border-color: #d0d7de; color: #1f2328; background: #ffffff; }
+[data-theme="github"] .btn-primary     { background: #0969da; color: #fff; border-color: #0969da; }
+[data-theme="github"] .btn-secondary   { background: #f6f8fa; color: #1f2328; }
+[data-theme="github"] .btn-danger      { color: #cf222e; border-color: #cf222e; }
+[data-theme="github"] .btn-amber       { color: #9a6700; border-color: #d4a72c; }
+[data-theme="github"] .btn-active      { background: #8250df; color: #fff; border-color: #8250df; }
+
+/* GitHub — sim/osc controls strip */
+[data-theme="github"] #oscControls     { background: #f6f8fa; border-top-color: #d0d7de; }
+[data-theme="github"] .osc-ctrl-label { color: #424a53; }
+[data-theme="github"] .osc-ctrl-val   { color: #0969da; }
+[data-theme="github"] .osc-div-btn    { border-color: #d0d7de; color: #1f2328; background: #ffffff; }
+[data-theme="github"] .osc-div-val    { color: #0969da; }
+
+/* GitHub — side menu */
+[data-theme="github"] #sideMenu       { background: #ffffff; border-right-color: #d0d7de; }
+[data-theme="github"] .menu-header    { background: #f6f8fa; border-bottom-color: #d0d7de; }
+[data-theme="github"] .menu-title     { color: #1f2328; }
+[data-theme="github"] .menu-close     { color: #1f2328; border-color: #d0d7de; background: #fff; }
+[data-theme="github"] .mtab           { color: #656d76; }
+[data-theme="github"] .mtab.active    { color: #0969da; border-bottom-color: #0969da; }
+[data-theme="github"] .mpanel         { background: #ffffff; }
+[data-theme="github"] .mgroup         { border-color: #d0d7de; background: #ffffff; }
+[data-theme="github"] .mgroup-title   { background: #f6f8fa; color: #1f2328; border-bottom-color: #d0d7de; }
+[data-theme="github"] .mrow           { border-bottom-color: #eaeef2; }
+[data-theme="github"] .mlabel         { color: #424a53; }
+[data-theme="github"] .mval           { color: #0969da; }
+[data-theme="github"] .mbtn           { border-color: #d0d7de; color: #1f2328; background: #fff; }
+[data-theme="github"] .mbtn-sel       { border-color: #d0d7de; color: #656d76; background: #f6f8fa; }
+[data-theme="github"] .mbtn-sel.active { background: #0969da; color: #fff; border-color: #0969da; }
+[data-theme="github"] .mbtn-full      { border-color: #0969da; color: #0969da; background: #fff; }
+[data-theme="github"] .swatch-btn.active { border-color: #8250df; box-shadow: 0 0 0 3px rgba(130,80,223,0.3); }
+[data-theme="github"] .font-pick-btn  { border-color: #d0d7de; color: #424a53; background: #fff; }
+[data-theme="github"] .font-pick-btn.active { border-color: #0969da; color: #0969da; background: rgba(9,105,218,0.06); }
+[data-theme="github"] .section-header { color: #0969da; border-top-color: #d0d7de; }
+
+/* GitHub — sim set menu */
+[data-theme="github"] #simSetMenu      { background: #ffffff; border-top-color: #d0d7de; }
+[data-theme="github"] .simset-header  { background: #f6f8fa; border-bottom-color: #d0d7de; }
+[data-theme="github"] .simset-title   { color: #1f2328; }
+[data-theme="github"] .simset-close   { color: #1f2328; border-color: #d0d7de; background: #fff; }
+[data-theme="github"] #simSetTabs     { background: #f6f8fa; border-bottom-color: #d0d7de; }
+[data-theme="github"] .sstab          { color: #656d76; }
+[data-theme="github"] .sstab.active   { color: #8250df; border-bottom-color: #8250df; }
+[data-theme="github"] .sspanel        { background: #ffffff; }
+[data-theme="github"] .ssgroup        { border-color: #d0d7de; background: #ffffff; }
+[data-theme="github"] .ssgroup-title  { background: #f6f8fa; color: #1f2328; border-bottom-color: #d0d7de; }
+[data-theme="github"] .ssrow          { border-bottom-color: #eaeef2; }
+[data-theme="github"] .sslabel        { color: #424a53; }
+[data-theme="github"] .ssval          { color: #0969da; }
+[data-theme="github"] .ss-selbtn      { border-color: #d0d7de; color: #656d76; background: #f6f8fa; }
+[data-theme="github"] .ss-selbtn.active { background: #0969da; color: #fff; border-color: #0969da; }
+[data-theme="github"] .ss-wavebtn     { border-color: #d0d7de; color: #656d76; background: #f6f8fa; }
+[data-theme="github"] .ss-wavebtn.active { background: #0969da; color: #fff; border-color: #0969da; }
+[data-theme="github"] .ss-fullbtn     { border-color: #0969da; color: #0969da; background: #fff; }
+[data-theme="github"] .ss-fullbtn.danger { border-color: #cf222e; color: #cf222e; }
+[data-theme="github"] .ss-note        { color: #656d76; border-bottom-color: #eaeef2; }
+[data-theme="github"] .ss-chtoggle    { border-color: #d0d7de; color: #656d76; background: #fff; }
+[data-theme="github"] .ss-chname      { color: #424a53; }
+[data-theme="github"] .ss-chdesc      { color: #656d76; }
+[data-theme="github"] .ss-badge-amber { background: rgba(154,103,0,0.1); color: #9a6700; border-color: rgba(154,103,0,0.3); }
+[data-theme="github"] .ss-badge-red   { background: rgba(207,34,46,0.1);  color: #cf222e; border-color: rgba(207,34,46,0.3); }
+[data-theme="github"] .ss-badge-green { background: rgba(31,136,61,0.1);  color: #1f883d; border-color: rgba(31,136,61,0.2); }
+[data-theme="github"] .ss-badge-cyan  { background: rgba(9,105,218,0.08); color: #0969da; border-color: rgba(9,105,218,0.2); }
+
+/* GitHub — channel pills */
+[data-theme="github"] #chPills,
+[data-theme="github"] #oscPills       { background: #f6f8fa; border-bottom-color: #d0d7de; }
+[data-theme="github"] .ch-pill-1      { border-color: #8250df; color: #8250df; background: rgba(130,80,223,0.08); }
+[data-theme="github"] .ch-pill-1 .ch-dot { background: #8250df; }
+[data-theme="github"] .ch-pill-2      { border-color: #cf222e; color: #cf222e; background: rgba(207,34,46,0.08); }
+[data-theme="github"] .ch-pill-2 .ch-dot { background: #cf222e; }
+[data-theme="github"] .ch-pill-3      { border-color: #0969da; color: #0969da; background: rgba(9,105,218,0.08); }
+[data-theme="github"] .ch-pill-3 .ch-dot { background: #0969da; }
+
+/* GitHub — bode zone */
+[data-theme="github"] #bodeZone       { background: #f6f8fa; border-top-color: #d0d7de; }
+[data-theme="github"] .bode-zone-title { color: #656d76; }
+[data-theme="github"] .bz-mag         { color: #0969da; }
+[data-theme="github"] .bz-phase       { color: #9a6700; }
+
+/* GitHub — sim chevron */
+[data-theme="github"] #simChevronWrap { background: #f6f8fa; border-top-color: #d0d7de; }
+[data-theme="github"] #micBar         { background: #f6f8fa; border-top-color: #d0d7de; }
+[data-theme="github"] .mic-bar-label  { color: #424a53; }
+[data-theme="github"] .sim-src-btn    { border-color: #d0d7de; color: #656d76; background: #fff; }
+[data-theme="github"] .sim-src-btn.active-synth { border-color: #8250df; color: #8250df; background: rgba(130,80,223,0.06); }
+[data-theme="github"] .sim-src-btn.active-file  { border-color: #0969da; color: #0969da; background: rgba(9,105,218,0.06); }
+[data-theme="github"] .wave-btn       { border-color: #d0d7de; color: #656d76; background: #fff; }
+[data-theme="github"] .wave-btn.active { background: #0969da; color: #fff; border-color: #0969da; }
+[data-theme="github"] .osc-ctrl-row input[type=range] { background: #d0d7de; }
+
+/* GitHub — sig badge */
+[data-theme="github"] .sig-badge      { background: #0969da; border-color: #0969da; color: #fff; }
+
+/* GitHub — scope overlays */
+[data-theme="github"] .scope-overlay,
+[data-theme="github"] .scope-overlay-right { color: #656d76; }
+
+/* ══════════════════════════════════════
+   FONT VARIABLES (unchanged)
+══════════════════════════════════════ */
 :root {
-    --font-settings-display: 'Orbitron', monospace;
-    --font-settings-body:    'Share Tech Mono', monospace;
-    --font-scope-display:    'Orbitron', monospace;
-    --font-scope-body:       'Share Tech Mono', monospace;
-    --font-info-display:     'Share Tech Mono', monospace;
-    --font-info-body:        'Share Tech Mono', monospace;
-    --font-display: var(--font-scope-display);
-    --font-ui:      var(--font-scope-body);
-    --font-scope:   var(--font-scope-body);
-    --font-data:    var(--font-info-body);
+    --font-display: 'Orbitron', monospace;
+    --font-ui:      'Share Tech Mono', monospace;
+    --font-scope:   'Share Tech Mono', monospace;
+    --font-data:    'Share Tech Mono', monospace;
     --settings-fs:  15px;
     --scope-fs:     15px;
     --info-fs:      15px;
 }
 
-/* ── RESET + BODY ── */
+/* ══════════════════════════════════════
+   RESET + BODY
+══════════════════════════════════════ */
 *, *::before, *::after {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;

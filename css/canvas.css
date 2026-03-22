@@ -1,4 +1,4 @@
-/* ── CANVAS.CSS ── */
+/* ── CANVAS.CSS v1.1.2 ── */
 #scopeArea {
     flex:       1;
     position:   relative;
@@ -7,22 +7,20 @@
     height:     0;
     width:      100%;
 }
-
 canvas {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
     display: block;
+    background: #000;
 }
-
-/* CRT scanline effect */
 #scopeArea::after {
     content:  '';
     position: absolute;
     inset:    0;
     background: repeating-linear-gradient(
         0deg, transparent, transparent 2px,
-        rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px
+        rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px
     );
     pointer-events: none;
     z-index:  10;
@@ -32,8 +30,8 @@ canvas {
     position:       absolute;
     top:            8px;
     left:           10px;
-    font-size:      0.68em;  /* CHANGED: rem → em */
-    color:          var(--neon-dim);
+    font-size:      0.68em;
+    color:          rgba(255,255,255,0.3);
     letter-spacing: 1px;
     pointer-events: none;
     z-index:        5;
@@ -43,8 +41,8 @@ canvas {
     position:       absolute;
     top:            8px;
     right:          10px;
-    font-size:      0.68em;  /* CHANGED: rem → em */
-    color:          var(--neon-dim);
+    font-size:      0.68em;
+    color:          rgba(255,255,255,0.3);
     letter-spacing: 1px;
     pointer-events: none;
     text-align:     right;
@@ -52,110 +50,71 @@ canvas {
     font-family:    var(--font-scope);
 }
 
-/* Trigger threshold markers */
 .trig-marker {
     position:       absolute;
     right:          4px;
-    font-size:      0.65em;  /* CHANGED: rem → em */
-    color:          var(--amber);
+    font-size:      0.65em;
+    color:          rgba(255,255,255,0.5);
     font-family:    var(--font-scope);
     pointer-events: none;
     z-index:        6;
-    text-shadow:    0 0 6px rgba(255,179,0,0.7);
     transition:     top 0.1s;
 }
 .trig-top { top: 30%; }
 .trig-bot { bottom: 30%; }
 
-/* ── INLINE OSC CONTROLS STRIP ── */
+/* OSC CONTROLS STRIP */
 #oscControls {
-    flex-shrink:   0;
-    background:    var(--panel);
-    border-top:    1px solid var(--border);
-    padding:       8px 12px;
-    display:       flex;
+    flex-shrink:    0;
+    background:     var(--panel);
+    border-top:     1px solid var(--border);
+    padding:        8px 12px;
+    display:        flex;
     flex-direction: column;
-    gap:           6px;
+    gap:            6px;
 }
-
-.osc-ctrl-row {
-    display:     flex;
-    align-items: center;
-    gap:         10px;
-}
-
+.osc-ctrl-row { display: flex; align-items: center; gap: 10px; }
 .osc-ctrl-label {
     font-family:    var(--font-ui);
-    font-size:      0.7em;  /* CHANGED: rem → em */
-    color:          var(--text-mid);
+    font-size:      0.7em;
+    color:          var(--text-dim);
     letter-spacing: 1.5px;
     min-width:      52px;
     flex-shrink:    0;
 }
-
 .osc-ctrl-row input[type=range] {
-    flex:               1;
-    -webkit-appearance: none;
-    height:             4px;
-    background:         var(--grid);
-    border-radius:      2px;
-    outline:            none;
+    flex: 1; -webkit-appearance: none;
+    height: 4px; background: var(--grid);
+    border-radius: 2px; outline: none;
 }
 .osc-ctrl-row input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width:         20px;
-    height:        20px;
+    width: 20px; height: 20px;
     border-radius: 50%;
-    background:    var(--neon);
-    box-shadow:    0 0 6px var(--neon-glow);
-    cursor:        pointer;
+    background: var(--text-main);
+    cursor: pointer;
 }
-
+/* Value readout — white, not amber */
 .osc-ctrl-val {
     font-family: var(--font-display);
-    font-size:   0.75em;  /* CHANGED: rem → em */
-    color:       var(--neon);
+    font-size:   0.75em;
+    color:       var(--text-main);
     min-width:   42px;
     text-align:  right;
 }
 
-/* time/volt div stepper inline */
-.osc-div-row {
-    display:         flex;
-    align-items:     center;
-    justify-content: space-between;
-    gap:             8px;
+/* T/V DIV steppers */
+.osc-div-row  { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.osc-div-group{ display: flex; align-items: center; gap: 6px; flex: 1; }
+.osc-div-btn  {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-mid); font-family: var(--font-ui);
+    font-size: 0.85em; padding: 4px 10px;
+    border-radius: 3px; cursor: pointer; min-width: 34px; min-height: 32px;
 }
-.osc-div-group {
-    display:     flex;
-    align-items: center;
-    gap:         6px;
-    flex:        1;
+.osc-div-btn:active { background: rgba(255,255,255,0.06); }
+.osc-div-val  {
+    font-family: var(--font-display); font-size: 0.72em;
+    color: var(--text-main); min-width: 58px; text-align: center;
 }
-.osc-div-btn {
-    background:    transparent;
-    border:        1px solid var(--border);
-    color:         var(--neon);
-    font-family:   var(--font-ui);
-    font-size:     0.85em;  /* CHANGED: rem → em */
-    padding:       4px 10px;
-    border-radius: 3px;
-    cursor:        pointer;
-    min-width:     34px;
-    min-height:    32px;
-}
-.osc-div-btn:active { background: var(--neon-glow); }
-
-.osc-div-val {
-    font-family:    var(--font-display);
-    font-size:      0.72em;  /* CHANGED: rem → em */
-    color:          var(--cyan);
-    min-width:      58px;
-    text-align:     center;
-}
-.osc-div-label {
-    font-size:   0.62em;  /* CHANGED: rem → em */
-    color:       var(--text-dim);
-    letter-spacing: 1px;
-    min-width:   44px;
-}
+.osc-div-label { font-size: 0.62em; color: var(--text-dim); letter-spacing: 1px; min-width: 44px; }
