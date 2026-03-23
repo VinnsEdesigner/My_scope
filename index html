@@ -443,7 +443,7 @@
     <div class="mpanel" id="mpanel-manual">
         <div class="manual-wrap">
 
-            <!-- MAIN TABS -->
+            <!-- MAIN FEATURES-->
             <div class="feat-section">
                 <div class="feat-section-title">MAIN TABS</div>
                 <div class="feat-item">
@@ -785,11 +785,10 @@
         <div class="mgroup">
             <div class="mgroup-title">BUILD INFO</div>
             <div class="build-row"><span>VERSION</span>    <span id="bVersion">v1.3.3</span></div>
-            <div class="build-row"><span>SAMPLE RATE</span><span id="bSampleRate">---</span></div>
-            <div class="build-row"><span>FFT SIZE</span>   <span id="bFftSize">4096</span></div>
-            <div class="build-row"><span>FREQ RES</span>   <span id="bFreqRes">---</span></div>
-            <div class="build-row"><span>BROWSER</span>    <span id="bBrowser">---</span></div>
-            <div class="build-row"><span>DSP MODE</span>   <span style="color:var(--amber);font-family:var(--font-display);font-size:0.72em">MAIN THREAD</span></div>
+            <div class="build-row"><span>SAMPLE RATE</span><span id="bSampleRate">upto 96Khz</span></div>
+            <div class="build-row"><span>FFT SIZE</span>   <span id="bFftSize">8096 max</span></div>
+            <div class="build-row"><span>FREQ RES</span>   <span id="bFreqRes">10-20000hz</span></div>
+            <div class="build-row"><span>BROWSER</span>    <span id="bBrowser">Chrome</span></div>
         </div>
 
     </div><!-- end BUILD -->
@@ -864,7 +863,7 @@
         </div>
         <div class="ss-note">Analyser and Bode unlock when CH1 has an active external source.</div>
     </div>
-    <!-- CHANNELS -->
+    <!-- CHANNELS -->j
     <div class="sspanel" id="sspanel-channels">
         <div class="ssgroup">
             <div class="ssgroup-title">ENABLE / DISABLE</div>
@@ -972,7 +971,7 @@
                 <div class="ss-bodelegend">
                     <span style="color:#00e5ff">— magnitude</span>
                     <span style="color:#ffb300">— phase</span>
-                    <span style="color:rgba(255,23,68,0.5);margin-left:auto">| -3dB</span>
+                    <span style="color:rgba(255,23,68,0.5);margin-left:a ituto">| -3dB</span>
                 </div>
             </div>
             <div class="ssgroup">
